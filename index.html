@@ -29,7 +29,7 @@
  .lg .val{font-family:var(--mono);font-weight:700;font-size:12.5px;margin-left:2px}
  #plot{position:relative;width:100%;cursor:crosshair;min-height:320px}
  #svg{width:100%;height:auto;display:block;touch-action:none}
- #sel{position:absolute;display:none;top:0;height:100%;background:rgba(125,140,255,.12);border-left:1px solid rgba(125,140,255,.6);border-right:1px solid rgba(125,140,255,.6);pointer-events:none}
+ #sel{position:absolute;display:none;background:rgba(125,140,255,.12);border:1px solid rgba(125,140,255,.6);border-radius:2px;pointer-events:none}
  .band{fill:var(--faint);font-family:var(--mono);font-size:10px;letter-spacing:.10em;font-weight:600}
  .lbl2{fill:var(--faint);font-family:var(--mono);font-size:10.5px}
  .rax{fill:var(--faint);font-family:var(--mono);font-size:10.5px;text-anchor:start}
@@ -41,7 +41,7 @@
  #tip .trow .tk{font-family:var(--mono);font-size:9.5px;color:var(--faint);text-transform:uppercase;letter-spacing:.08em}
  #tip .trow b{margin-left:auto;font-family:var(--mono)}
  #tip .tsw{width:9px;height:9px;border-radius:2px;flex:none}
- .foot{color:var(--faint);font-size:11.5px;line-height:1.6;padding:10px 4px 12px}.foot b{color:var(--mut);font-weight:650}
+ .foot{color:var(--faint);font-size:11px;line-height:1.6;padding:10px 4px 12px}
  .status{font-family:var(--mono);font-size:12px;color:var(--mut);padding:40px 4px}
  @media(prefers-reduced-motion:reduce){*{transition:none!important}}
 </style></head><body>
@@ -49,12 +49,11 @@
  <div class="head"><span class="eyebrow">Crypto · Seasonal Index</span><h1>Сезонный индекс — полный год</h1><span class="chip" id="chip">загрузка…</span></div>
  <div class="ctrls">
   <div class="grp"><span class="lab">шаг</span><button id="rD">1 день</button><button id="rH">1 час</button></div>
-  <div class="grp"><span class="lab">зум</span><button id="zr">сброс</button><span class="lab" style="letter-spacing:.04em;text-transform:none">выделите участок мышью</span></div>
+  <div class="grp"><span class="lab">зум</span><button id="zr">сброс</button><span class="lab" style="letter-spacing:.04em;text-transform:none">выделите рамку мышью</span></div>
  </div>
  <div class="legend" id="legend"></div>
  <div id="plot"><div id="svghost"><div class="status" id="status">Загрузка данных…</div></div><div id="sel"></div><div id="tip"></div></div>
- <div class="foot"><b>Метод.</b> Цена закрытия каждого года → накопленная лог-доходность от 1 января; усреднение по полным годам; min–max нормировка: сезонный минимум = 0, максимум = 100. Сплошные линии — сезонный индекс (левая ось, 0–100); светящиеся пунктирные — фактический путь текущего года в % (правая ось). «Шаг» — разрешение 1 день / 1 час (для детали приблизьте участок). Время — UTC+3.
-  <br>Источник: Binance. Данные обновляются автоматически раз в сутки. Выборка мала (5–8 лет) — это история, не прогноз. Не инвестиционная рекомендация.</div>
+ <div class="foot">Источник: Binance · обновление раз в сутки · UTC+3. Не инвестиционная рекомендация.</div>
 </div></div>
 <script>
 let D,M,COINS,PAL;
@@ -65,46 +64,64 @@ const MSHORT=["ЯНВ","ФЕВ","МАР","АПР","МАЙ","ИЮН","ИЮЛ","А
 let res="D";
 const ND=()=>res==="H"?M.H:M.Dn;
 const PERDAY=()=>res==="H"?24:1;
-let dom=[0,0];const off={};
+let dom=[0,0];         // x index window
+let vy=[0,1];          // vertical view window (fraction of full height, 0=bottom 1=top)
+const off={};
 const VW=1000,VH=560,L=48,R=940,T=18,B=496;
 const X=d=>L+(d-dom[0])/((dom[1]-dom[0])||1)*(R-L);
-const YL=v=>B-v/100*(B-T);
+const viewPix=fr=>B-((fr-vy[0])/((vy[1]-vy[0])||1))*(B-T);
+const YL=v=>viewPix(v/100);
 function md(day0){let m=0,d=Math.max(0,Math.min(364,day0));while(m<11&&d>=ML[m]){d-=ML[m];m++;}return{mo:m+1,dd:d+1};}
 function dlab(i){const pd=PERDAY();const day=Math.floor(i/pd),hr=res==="H"?i%24:null;const o=md(day);return o.dd+" "+MGEN[o.mo]+(hr!=null?", "+String(hr).padStart(2,"0")+":00":"");}
 function bandsList(){const pd=PERDAY();const a=[];for(let m=0;m<12;m++){a.push([MSTART[m]*pd,(m<11?MSTART[m+1]:365)*pd,MSHORT[m]]);}return a;}
 function SER(){const a=[];COINS.forEach(c=>a.push({id:c+"_s",coin:c,kind:"seasonal",name:c,sub:D[c].window,color:D[c].color,axis:"L",data:res==="H"?D[c].sea_h:D[c].sea_d,w:2.1,dash:false}));COINS.forEach(c=>a.push({id:c+"_c",coin:c,kind:"current",name:c,sub:"тек.",color:D[c].color,axis:"R",data:res==="H"?D[c].cur_h:D[c].cur_d,w:1.8,dash:true}));return a;}
 let rmin,rmax,YR;
-function rscale(){rmin=0;rmax=0;SER().filter(s=>s.kind==="current").forEach(s=>s.data.forEach(v=>{if(v!=null){if(v<rmin)rmin=v;if(v>rmax)rmax=v;}}));const p=(rmax-rmin)*0.10||5;rmin-=p;rmax+=p;YR=v=>B-(v-rmin)/(rmax-rmin)*(B-T);}
+function rscale(){rmin=0;rmax=0;SER().forEach(s=>{if(s.kind==="current"&&!off[s.id])s.data.forEach(v=>{if(v!=null){if(v<rmin)rmin=v;if(v>rmax)rmax=v;}});});const p=(rmax-rmin)*0.10||5;rmin-=p;rmax+=p;YR=v=>viewPix((v-rmin)/((rmax-rmin)||1));}
 function path(data,axis){let o="",pen=false;for(let d=Math.floor(dom[0]);d<=Math.ceil(dom[1]);d++){const v=data[d];if(v==null){pen=false;continue;}const x=X(d).toFixed(1),y=(axis==="L"?YL(v):YR(v)).toFixed(1);o+=(pen?"L":"M")+x+" "+y+" ";pen=true;}return o.trim();}
 function render(){rscale();
  let s='<svg id="svg" viewBox="0 0 '+VW+' '+VH+'" xmlns="http://www.w3.org/2000/svg">';
- s+='<defs><filter id="glow" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="2.4" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>';
- for(let v=0;v<=100;v+=25){const y=YL(v).toFixed(1);s+='<line x1="'+L+'" x2="'+R+'" y1="'+y+'" y2="'+y+'" stroke="var(--grid)"/>';s+='<text class="lbl2" x="'+(L-8)+'" y="'+(+y+4)+'" text-anchor="end">'+v+'</text>';}
- for(let k=0;k<=4;k++){const v=rmin+(rmax-rmin)*k/4;const y=YR(v).toFixed(1);s+='<text class="rax" x="'+(R+8)+'" y="'+(+y+4)+'">'+(v>=0?"+":"")+v.toFixed(0)+'%</text>';}
+ s+='<defs><filter id="glow" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="2.4" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>';
+ s+='<clipPath id="clip"><rect x="'+L+'" y="'+T+'" width="'+(R-L)+'" height="'+(B-T)+'"/></clipPath></defs>';
+ // left axis ticks (dynamic to vertical view)
+ for(let k=0;k<=4;k++){const fr=vy[0]+(vy[1]-vy[0])*k/4;const y=viewPix(fr).toFixed(1);const val=fr*100;s+='<line x1="'+L+'" x2="'+R+'" y1="'+y+'" y2="'+y+'" stroke="var(--grid)"/>';s+='<text class="lbl2" x="'+(L-8)+'" y="'+(+y+4)+'" text-anchor="end">'+(Math.abs(val-Math.round(val))<0.05?Math.round(val):val.toFixed(1))+'</text>';}
+ // right axis ticks (%)
+ for(let k=0;k<=4;k++){const fr=vy[0]+(vy[1]-vy[0])*k/4;const v=rmin+fr*(rmax-rmin);const y=viewPix(fr).toFixed(1);s+='<text class="rax" x="'+(R+8)+'" y="'+(+y+4)+'">'+(v>=0?"+":"")+v.toFixed(0)+'%</text>';}
  bandsList().forEach(([a,b,lab])=>{if(a>dom[0]&&a<dom[1]){const x=X(a).toFixed(1);s+='<line x1="'+x+'" x2="'+x+'" y1="'+T+'" y2="'+B+'" stroke="var(--grid)"/>';}const c=(Math.max(a,dom[0])+Math.min(b,dom[1]))/2;if(b>dom[0]&&a<dom[1])s+='<text class="band" x="'+X(c)+'" y="'+(T+12)+'" text-anchor="middle">'+lab+'</text>';});
  s+='<line x1="'+L+'" x2="'+R+'" y1="'+B+'" y2="'+B+'" stroke="var(--axis)"/>';
  const NT=6;for(let k=0;k<=NT;k++){const di=dom[0]+(dom[1]-dom[0])*k/NT;s+='<text class="xtick" x="'+X(di).toFixed(1)+'" y="'+(B+17)+'" text-anchor="middle">'+dlab(Math.round(di))+'</text>';}
  const ti=res==="H"?M.today_h:M.today_d;if(ti>dom[0]&&ti<dom[1]){const nx=X(ti).toFixed(1);s+='<line x1="'+nx+'" x2="'+nx+'" y1="'+T+'" y2="'+B+'" stroke="var(--now)" stroke-width="1.2" stroke-dasharray="2 5"/>';s+='<text class="nowlbl" x="'+(+nx+5)+'" y="'+(T+11)+'">СЕЙЧАС</text>';}
+ s+='<g clip-path="url(#clip)">';
  SER().forEach(se=>{if(off[se.id])return;const dd=path(se.data,se.axis);if(!dd)return;const f=se.kind==="current"?' filter="url(#glow)"':'';s+='<path d="'+dd+'" fill="none" stroke="'+se.color+'" stroke-width="'+se.w+'" '+(se.dash?'stroke-dasharray="1 5" stroke-linecap="round"':'')+f+' stroke-linejoin="round"/>';});
+ s+='</g>';
  s+='<line id="guide" x1="0" x2="0" y1="'+T+'" y2="'+B+'" stroke="var(--axis)" opacity="0"/>';
  s+='</svg>';document.getElementById("svghost").innerHTML=s;}
 function legend(){const el=document.getElementById("legend");el.innerHTML="";SER().forEach(se=>{const lg=document.createElement("span");lg.className="lg"+(off[se.id]?" off":"");lg.tabIndex=0;lg.innerHTML='<span class="sw" style="background:'+se.color+(se.dash?";box-shadow:0 0 7px "+se.color:"")+'"></span><span class="lgname">'+se.name+'</span><span class="lgsub">'+se.sub+'</span>'+(se.kind==="current"?' <span class="val" id="v_'+se.id+'"></span>':'');const tog=()=>{off[se.id]=!off[se.id];redraw();};lg.onclick=tog;lg.onkeydown=e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();tog();}};el.appendChild(lg);});}
 function fillVals(){SER().filter(s=>s.kind==="current").forEach(s=>{const vv=s.data.filter(v=>v!=null);const el=document.getElementById("v_"+s.id);if(el&&vv.length){const v=vv[vv.length-1];el.textContent=(v>=0?"+":"")+v.toFixed(1)+"%";el.style.color=v>=0?"#46d39a":"#ff6b6b";}});}
 function pxIndex(cx){const svg=document.getElementById("svg");const r=svg.getBoundingClientRect();const vx=(cx-r.left)/r.width*VW;let d=dom[0]+(vx-L)/(R-L)*(dom[1]-dom[0]);return Math.max(dom[0],Math.min(dom[1],d));}
+function pyView(cy){const svg=document.getElementById("svg");const r=svg.getBoundingClientRect();let py=(cy-r.top)/r.height*VH;return Math.max(T,Math.min(B,py));}
+function frac(py){return vy[0]+((B-py)/(B-T))*(vy[1]-vy[0]);}
 let drag=null;
 function bind(){const host=document.getElementById("plot");const tip=document.getElementById("tip");const sel=document.getElementById("sel");
- host.onmousedown=e=>{drag={x0:e.clientX,i0:pxIndex(e.clientX)};sel.style.display="block";};
- host.onmousemove=e=>{const r=host.getBoundingClientRect();if(drag){const x0=Math.min(drag.x0,e.clientX)-r.left,w=Math.abs(e.clientX-drag.x0);sel.style.left=x0+"px";sel.style.width=w+"px";tip.style.display="none";document.getElementById("guide").setAttribute("opacity","0");return;}
+ host.onmousedown=e=>{drag={x0:e.clientX,y0:e.clientY,i0:pxIndex(e.clientX)};sel.style.display="block";};
+ host.onmousemove=e=>{const r=host.getBoundingClientRect();if(drag){const lx=Math.min(drag.x0,e.clientX)-r.left,w=Math.abs(e.clientX-drag.x0),ty=Math.min(drag.y0,e.clientY)-r.top,h=Math.abs(e.clientY-drag.y0);sel.style.left=lx+"px";sel.style.width=w+"px";sel.style.top=ty+"px";sel.style.height=h+"px";tip.style.display="none";document.getElementById("guide").setAttribute("opacity","0");return;}
    const d=Math.round(pxIndex(e.clientX));const g=document.getElementById("guide");if(g){g.setAttribute("x1",X(d));g.setAttribute("x2",X(d));g.setAttribute("opacity","0.45");}
    let html='<div class="tdate">'+dlab(d)+'</div>';let any=false;SER().forEach(se=>{if(off[se.id])return;const v=se.data[d];if(v==null)return;any=true;const txt=se.kind==="seasonal"?Math.round(v):((v>=0?"+":"")+v.toFixed(1)+"%");html+='<div class="trow"><span class="tsw" style="background:'+se.color+'"></span>'+se.coin+'<span class="tk">'+(se.kind==="current"?"тек.":"норма")+'</span><b>'+txt+'</b></div>';});
    if(!any){tip.style.display="none";return;}tip.innerHTML=html;tip.style.display="block";const px=e.clientX-r.left,tw=tip.offsetWidth;tip.style.left=Math.min(Math.max(px+16,4),r.width-tw-4)+"px";tip.style.top="4px";};
- const endDrag=e=>{if(!drag)return;sel.style.display="none";sel.style.width="0";const i1=pxIndex(e.clientX);const a=Math.round(Math.min(drag.i0,i1)),b=Math.round(Math.max(drag.i0,i1));drag=null;if(b-a>=Math.max(2,PERDAY()/2)){dom=[a,b];redraw();}};
+ const endDrag=e=>{if(!drag)return;sel.style.display="none";sel.style.width="0";sel.style.height="0";
+   const i1=pxIndex(e.clientX);const a=Math.round(Math.min(drag.i0,i1)),b=Math.round(Math.max(drag.i0,i1));
+   const f1=frac(pyView(drag.y0)),f2=frac(pyView(e.clientY));const flo=Math.min(f1,f2),fhi=Math.max(f1,f2);
+   drag=null;let changed=false;
+   if(b-a>=Math.max(2,PERDAY()/2)){dom=[a,b];changed=true;}
+   if(fhi-flo>=0.08){vy=[Math.max(0,flo),Math.min(1,fhi)];changed=true;}
+   if(changed)redraw();};
  host.onmouseup=endDrag;host.onmouseleave=e=>{if(drag)endDrag(e);tip.style.display="none";const g=document.getElementById("guide");if(g)g.setAttribute("opacity","0");};}
 function redraw(){render();bind();legend();fillVals();}
-function setRes(r){if(res===r)return;res=r;dom=[0,ND()-1];document.getElementById("rH").classList.toggle("on",r==="H");document.getElementById("rD").classList.toggle("on",r==="D");redraw();}
-function start(){COINS=M.coins;PAL={};COINS.forEach(c=>PAL[c]=D[c].color);dom=[0,ND()-1];
+function setRes(r){if(res===r)return;res=r;dom=[0,ND()-1];vy=[0,1];document.getElementById("rH").classList.toggle("on",r==="H");document.getElementById("rD").classList.toggle("on",r==="D");redraw();}
+function start(){COINS=M.coins;PAL={};COINS.forEach(c=>PAL[c]=D[c].color);
+ COINS.forEach((c,i)=>{if(i>0){off[c+"_s"]=true;off[c+"_c"]=true;}});   // only first coin on by default
+ dom=[0,ND()-1];vy=[0,1];
  document.getElementById("chip").textContent="обновлено · "+(M.asof||"")+" · UTC+3";
- document.getElementById("rH").onclick=()=>setRes("H");document.getElementById("rD").onclick=()=>setRes("D");document.getElementById("zr").onclick=()=>{dom=[0,ND()-1];redraw();};document.getElementById("rD").classList.add("on");redraw();window.addEventListener("resize",redraw);}
+ document.getElementById("rH").onclick=()=>setRes("H");document.getElementById("rD").onclick=()=>setRes("D");document.getElementById("zr").onclick=()=>{dom=[0,ND()-1];vy=[0,1];redraw();};document.getElementById("rD").classList.add("on");redraw();window.addEventListener("resize",redraw);}
 fetch("data.json?t="+Date.now()).then(r=>r.json()).then(d=>{D=d;M=d._meta;start();}).catch(e=>{document.getElementById("status").textContent="Не удалось загрузить data.json. Обновите страницу позже.";});
 </script>
 </body></html>
