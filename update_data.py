@@ -13,9 +13,14 @@ import numpy as np, pandas as pd
 TZ = 3                       # display timezone offset (UTC+3)
 FIRST_YEAR = 2018
 COINS = {                    # ticker -> dark-theme color
-    "BTC": ("BTCUSDT", "#F7A93B"),
-    "XRP": ("XRPUSDT", "#5BC8FF"),
-    "SOL": ("SOLUSDT", "#B57BFF"),
+    "BTC":  ("BTCUSDT",  "#F7A93B"),
+    "XRP":  ("XRPUSDT",  "#38BDF8"),
+    "SOL":  ("SOLUSDT",  "#A78BFA"),
+    "LINK": ("LINKUSDT", "#3B82F6"),
+    "ZEC":  ("ZECUSDT",  "#FACC15"),
+    "BCH":  ("BCHUSDT",  "#34D399"),
+    "TON":  ("TONUSDT",  "#22D3EE"),
+    "DOGE": ("DOGEUSDT", "#F472B6"),
 }
 BASE = "https://data-api.binance.vision/api/v3/klines"
 HRS = 365 * 24               # grid points for hourly resolution
