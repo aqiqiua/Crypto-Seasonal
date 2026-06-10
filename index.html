@@ -61,10 +61,7 @@
  <div class="ctrls">
   <div class="grp"><span class="lab">шаг</span><button id="rD">1 день</button><button id="rH">1 час</button></div>
   <div class="grp"><span class="lab">лет</span><span id="lbBtns"></span></div>
-  <button id="normBtn">Норма</button>
-  <button id="curBtn">Текущий год</button>
-  <button id="matchBtn">Похожий год</button>
-  <button id="matchMBtn">Похожий мес</button>
+  <div class="grp"><span class="lab">показать</span><button class="gbtn" id="normBtn">Норма</button><button class="gbtn" id="curBtn">Текущий</button><button class="gbtn" id="matchBtn">Похожий год</button><button class="gbtn" id="matchMBtn">Похожий мес</button></div>
   <button id="zr">Сброс зума</button>
   <button id="resetAll">По умолчанию</button>
  </div>
@@ -81,6 +78,7 @@ const ML=[31,28,31,30,31,30,31,31,30,31,30,31];
 const MSTART=[0,31,59,90,120,151,181,212,243,273,304,334];
 const MGEN=["","января","февраля","марта","апреля","мая","июня","июля","августа","сентября","октября","ноября","декабря"];
 const MSHORT=["ЯНВ","ФЕВ","МАР","АПР","МАЙ","ИЮН","ИЮЛ","АВГ","СЕН","ОКТ","НОЯ","ДЕК"];
+const MNAME=["","январь","февраль","март","апрель","май","июнь","июль","август","сентябрь","октябрь","ноябрь","декабрь"];
 let res="D";
 const ND=()=>res==="H"?M.H:M.Dn;
 const PERDAY=()=>res==="H"?24:1;
@@ -103,6 +101,7 @@ function lbButtons(){const opts=lookbackOptions();const el=document.getElementBy
 function lastIdx(c){const a=D[c].cur;for(let i=a.length-1;i>=0;i--)if(a[i]!=null)return i;return -1;}
 function corrW(a,b,lo,hi){let xs=[],ys=[];for(let i=lo;i<=hi;i++){const u=a[i],v=b[i];if(u==null||v==null||isNaN(u)||isNaN(v))continue;xs.push(u);ys.push(v);}const n=xs.length;if(n<6)return null;let mx=0,my=0;for(let i=0;i<n;i++){mx+=xs[i];my+=ys[i];}mx/=n;my/=n;let sxy=0,sxx=0,syy=0;for(let i=0;i<n;i++){const dx=xs[i]-mx,dy=ys[i]-my;sxy+=dx*dy;sxx+=dx*dx;syy+=dy*dy;}if(sxx<=0||syy<=0)return null;return sxy/Math.sqrt(sxx*syy);}
 function monthStart(){const d=M.today_d;let m=0;for(let i=0;i<12;i++){if(MSTART[i]<=d)m=i;}return MSTART[m];}
+function curMonth(){const d=M.today_d;let m=0;for(let i=0;i<12;i++){if(MSTART[i]<=d)m=i;}return m+1;}
 function seasonal(c){const key=c+"|"+lookback;if(seaCache[key])return seaCache[key];const ys=D[c].yrs||[];if(!ys.length){return seaCache[key]={idx:null,avg:null,n:0};}
  const N=lookback==="max"?ys.length:Math.min(lookback,ys.length);const use=ys.slice(-N);const avg=new Array(M.Dn).fill(0);
  use.forEach(y=>{const p=D[c].years[String(y)];for(let i=0;i<M.Dn;i++)avg[i]+=p[i];});for(let i=0;i<M.Dn;i++)avg[i]/=N;
@@ -150,14 +149,14 @@ function assets(){const el=document.getElementById("assets");el.innerHTML="";COI
 function stats(){const el=document.getElementById("stats");el.innerHTML="";
  if(res!=="D"){el.innerHTML='<span class="stnote">похожесть доступна в режиме «1 день»</span>';return;}
  const onc=COINS.filter(c=>sel[c]);if(!onc.length){return;}
- const P=v=>(v==null?"—":Math.round(v*100)+"%");
+ const P=v=>(v==null?"—":Math.round(v*100)+"%");const mn=MNAME[curMonth()];
  onc.forEach(c=>{const nt=normSim(c,0);const mm=matches(c);const by=mm&&mm.year,bmo=mm&&mm.month;
    const tc=nt==null?"var(--mut)":(nt<0?"#ff6b6b":(nt>=0.6?"#46d39a":"var(--ink)"));
    const row=document.createElement("span");row.className="srow";
    row.innerHTML='<span class="sdot" style="background:'+color(c)+'"></span><b>'+c+'</b>'
-     +'<span class="m"><span class="k">тенденция:</span><span style="color:'+tc+'">'+P(nt)+'</span></span>'
-     +'<span class="m"><span class="k">лучший год:</span><span>'+(by?by.year+" ("+P(by.r)+")":"—")+'</span></span>'
-     +'<span class="m"><span class="k">лучший месяц:</span><span>'+(bmo?bmo.year+" ("+P(bmo.r)+")":"—")+'</span></span>';
+     +'<span class="m"><span class="k">схожесть с нормой:</span><span style="color:'+tc+'">'+P(nt)+'</span></span>'
+     +'<span class="m"><span class="k">похожий год:</span><span>'+(by?by.year+" ("+P(by.r)+")":"—")+'</span></span>'
+     +'<span class="m"><span class="k">похожий месяц:</span><span>'+(bmo?mn+" "+bmo.year+" ("+P(bmo.r)+")":"—")+'</span></span>';
    el.appendChild(row);});}
 function vb(e){const svg=document.getElementById("svg");const r=svg.getBoundingClientRect();return{x:(e.clientX-r.left)/r.width*VW,y:(e.clientY-r.top)/r.height*VH};}
 function region(p){if(p.y>B||p.y<T)return"x";if(p.x<L||p.x>R)return"y";return"zoom";}
