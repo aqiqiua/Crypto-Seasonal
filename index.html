@@ -23,7 +23,8 @@
  .assets{display:flex;flex-wrap:wrap;align-items:center;gap:7px;margin:12px 2px 6px;min-height:14px}
  .achip{display:flex;align-items:center;gap:7px;font-size:13px;font-weight:700;padding:6px 11px;border-radius:9px;border:1px solid var(--edge);background:rgba(255,255,255,.015);color:var(--faint);cursor:pointer;transition:.15s}
  .achip:hover{background:rgba(255,255,255,.05)}
- .achip.on{color:var(--ink)}
+ .achip.on{color:var(--ink);background:rgba(255,255,255,.05)}
+ .achip .yrs{font-family:var(--mono);font-size:10px;color:var(--faint);font-weight:600}
  .achip .dot{width:9px;height:9px;border-radius:3px;flex:none;opacity:.35}
  .achip.on .dot{opacity:1}
  .achip b{font-family:var(--mono);font-weight:700;font-size:12px}
@@ -51,6 +52,7 @@
   <div class="grp"><span class="lab">шаг</span><button id="rD">1 день</button><button id="rH">1 час</button></div>
   <button id="curBtn">Текущий год</button>
   <button id="zr">Сброс зума</button>
+  <button id="resetAll">По умолчанию</button>
  </div>
  <div class="assets" id="assets"></div>
  <div id="plot"><div id="svghost"><div class="status" id="status">Загрузка данных…</div></div><div id="sel"></div><div id="tip"></div></div>
@@ -60,6 +62,7 @@
 let D,M,COINS;
 const PAL={BTC:"#FB7E14",ETH:"#818CF8",BNB:"#A3E635",SOL:"#A855F7",XRP:"#06B6D4",DOGE:"#EC4899",TRX:"#FB7185",LINK:"#3B82F6",BCH:"#22C55E",LTC:"#94A3B8",ZEC:"#FDE047",TON:"#EF4444"};
 const color=c=>PAL[c]||(D[c]&&D[c].color)||"#888";
+function years(c){const w=(D[c]&&D[c].window)||"";const m=w.match(/\((\d+)-Yr\)/);return m?m[1]+"л":"—";}
 const ML=[31,28,31,30,31,30,31,31,30,31,30,31];
 const MSTART=[0,31,59,90,120,151,181,212,243,273,304,334];
 const MGEN=["","января","февраля","марта","апреля","мая","июня","июля","августа","сентября","октября","ноября","декабря"];
@@ -99,7 +102,7 @@ function render(){rscale();
  s+='</svg>';document.getElementById("svghost").innerHTML=s;}
 function assets(){const el=document.getElementById("assets");el.innerHTML="";COINS.forEach(c=>{const on=!!sel[c];const chip=document.createElement("button");chip.className="achip"+(on?" on":"");chip.tabIndex=0;if(on)chip.style.borderColor=color(c);
   let val="";if(on&&showCur){const arr=res==="H"?D[c].cur_h:D[c].cur_d;const vv=arr.filter(v=>v!=null);if(vv.length){const v=vv[vv.length-1];val=' <b style="color:'+(v>=0?"#46d39a":"#ff6b6b")+'">'+(v>=0?"+":"")+v.toFixed(0)+'%</b>';}}
-  chip.innerHTML='<span class="dot" style="background:'+color(c)+'"></span>'+c+val;
+  chip.innerHTML='<span class="dot" style="background:'+color(c)+'"></span>'+c+' <span class="yrs">'+years(c)+'</span>'+val;
   const tog=()=>{sel[c]=!sel[c];redraw();};chip.onclick=tog;chip.onkeydown=e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();tog();}};el.appendChild(chip);});}
 function vb(e){const svg=document.getElementById("svg");const r=svg.getBoundingClientRect();return{x:(e.clientX-r.left)/r.width*VW,y:(e.clientY-r.top)/r.height*VH};}
 function region(p){if(p.y>B||p.y<T)return"x";if(p.x<L||p.x>R)return"y";return"zoom";}
@@ -129,9 +132,10 @@ function setRes(r){if(res===r)return;res=r;dom=[0,ND()-1];vy=[0,1];document.getE
 function start(){COINS=M.coins;
  COINS.forEach((c,i)=>{sel[c]=(i===0);});      // only first asset selected
  dom=[0,ND()-1];vy=[0,1];
- document.getElementById("chip").textContent="обновлено · "+(M.asof||"")+" · UTC+3";
+ document.getElementById("chip").textContent="обновлено · "+(M.asof||"");
  document.getElementById("rH").onclick=()=>setRes("H");document.getElementById("rD").onclick=()=>setRes("D");
  document.getElementById("zr").onclick=()=>{dom=[0,ND()-1];vy=[0,1];redraw();};
+ document.getElementById("resetAll").onclick=()=>{res="D";COINS.forEach((c,i)=>{sel[c]=(i===0);});showCur=true;dom=[0,ND()-1];vy=[0,1];document.getElementById("rH").classList.remove("on");document.getElementById("rD").classList.add("on");document.getElementById("curBtn").classList.add("on");redraw();};
  const cb=document.getElementById("curBtn");cb.classList.toggle("on",showCur);cb.onclick=()=>{showCur=!showCur;cb.classList.toggle("on",showCur);redraw();};
  document.getElementById("rD").classList.add("on");redraw();window.addEventListener("resize",redraw);}
 fetch("data.json?t="+Date.now()).then(r=>r.json()).then(d=>{D=d;M=d._meta;start();}).catch(e=>{document.getElementById("status").textContent="Не удалось загрузить data.json. Обновите страницу позже.";});
