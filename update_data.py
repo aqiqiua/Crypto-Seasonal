@@ -45,10 +45,10 @@ def ms(d): return int(d.replace(tzinfo=dt.timezone.utc).timestamp() * 1000)
 def get(url):
     return urllib.request.urlopen(urllib.request.Request(url, headers=UA), timeout=40)
 
-def fetch_binance(symbol, start, end):
+def fetch_binance(symbol, start, end, interval="1h"):
     out, cur, endms = [], ms(start), ms(end)
     while cur < endms:
-        q = urllib.parse.urlencode({"symbol": symbol, "interval": "1h",
+        q = urllib.parse.urlencode({"symbol": symbol, "interval": interval,
                                     "startTime": cur, "endTime": endms, "limit": 1000})
         try:
             with get(BINANCE + "?" + q) as r: batch = json.load(r)
@@ -199,6 +199,74 @@ def market_cap_order(names):
     order = cryptos + metals
     print("order:", order); return order
 
+STABLES = {"usdt","usdc","dai","fdusd","usde","tusd","usdd","pyusd","busd","gusd","usdp",
+           "frax","lusd","susd","usds","usdl","crvusd","eurc","usd1"}
+WRAPPED = {"wbtc","weth","wsteth","steth","weeth","wbeth","reth","cbeth","meth","rseth","ezeth",
+           "bnsol","jupsol","wbnb","lbtc","solvbtc","cbbtc","tbtc","susde","weeth"}
+
+def _last(cur):
+    for i in range(len(cur) - 1, -1, -1):
+        if cur[i] is not None: return i
+    return -1
+
+def _corr(a, b, lo, hi):
+    xs, ys = [], []
+    for i in range(lo, hi + 1):
+        u, v = a[i], b[i]
+        if u is None or v is None: continue
+        xs.append(u); ys.append(v)
+    n = len(xs)
+    if n < 6: return None
+    mx = sum(xs) / n; my = sum(ys) / n
+    sxy = sxx = syy = 0.0
+    for i in range(n):
+        dx = xs[i] - mx; dy = ys[i] - my
+        sxy += dx * dy; sxx += dx * dx; syy += dy * dy
+    if sxx <= 0 or syy <= 0: return None
+    return sxy / ((sxx * syy) ** 0.5)
+
+def best_match(years, cur, yrs):
+    L = _last(cur)
+    if L < 20: return None
+    best = None
+    for y in yrs:
+        r = _corr(cur, years[y], 0, L)
+        if r is not None and (best is None or r > best[1]):
+            best = (y, r)
+    return best
+
+def top_candidates():
+    try:
+        url = "https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=50&page=1"
+        with get(url) as r: data = json.load(r)
+    except Exception as e:
+        print("top50 list failed:", e); return []
+    names = []
+    for d in data:
+        sym = (d.get("symbol") or "").lower(); nm = sym.upper()
+        if not sym or sym in STABLES or sym in WRAPPED or nm in COINS: continue
+        names.append(nm)
+    return names
+
+def scan_top(this_year):
+    best = None; cands = top_candidates()
+    print(f"scanning {len(cands)} top pairs (daily)...")
+    for nm in cands:
+        rows = []
+        for y in range(FIRST_YEAR, this_year + 1):
+            rows += fetch_binance(nm + "USDT", dt.datetime(y, 1, 1), dt.datetime(y + 1, 1, 1, 3), "1d")
+        if not rows: continue
+        years, cur, yrs = daily_years(rows, this_year, FIRST_YEAR)
+        if len(yrs) < 3: continue
+        bm = best_match(years, cur, yrs)
+        if bm and (best is None or bm[1] > best["score"]):
+            best = {"name": nm, "years": years, "cur": cur, "yrs": yrs, "year": bm[0], "score": bm[1]}
+    if best:
+        print(f"SUGGESTED: {best['name']} ~ {best['year']} ({best['score']*100:.0f}%)")
+    else:
+        print("SUGGESTED: none")
+    return best
+
 def main():
     now_local = dt.datetime.now(dt.timezone.utc).replace(tzinfo=None) + dt.timedelta(hours=TZ)
     this_year = now_local.year
@@ -225,10 +293,18 @@ def main():
         span = f"{yrs[0]}-{yrs[-1]} ({len(yrs)}-Yr)" if yrs else "n/a"
         print(f"{name} [{src}]: {span}  rows={len(rows)}")
     order = market_cap_order(list(COINS))
+    sug = scan_top(this_year); suggested = None
+    if sug:
+        nm = sug["name"]; suggested = nm
+        out[nm] = {"color": "#F0ABFC", "yrs": sug["yrs"],
+                   "years": {str(y): sug["years"][y] for y in sug["yrs"]},
+                   "cur": sug["cur"], "sea_h": None, "cur_h": None, "daily": True,
+                   "suggested": True, "match": {"year": sug["year"], "score": round(sug["score"], 3)}}
+        order = order + [nm]
     yr0 = dt.datetime(this_year, 1, 1); yr1 = dt.datetime(this_year, 12, 31, 23)
     frac = min(max((now_local - yr0).total_seconds() / (yr1 - yr0).total_seconds(), 0.0), 1.0)
     months = ["","января","февраля","марта","апреля","мая","июня","июля","августа","сентября","октября","ноября","декабря"]
-    out["_meta"] = {"tz": "UTC+3", "H": HRS, "Dn": DAYS, "coins": order,
+    out["_meta"] = {"tz": "UTC+3", "H": HRS, "Dn": DAYS, "coins": order, "suggested": suggested,
                     "today_h": round(frac * (HRS - 1)), "today_d": round(frac * (DAYS - 1)),
                     "asof": f"{now_local.day} {months[now_local.month]} {now_local.year}"}
     json.dump(out, open("data.json", "w"), separators=(",", ":"), ensure_ascii=False)
