@@ -63,6 +63,7 @@
   <button id="normBtn">Норма</button>
   <button id="curBtn">Текущий год</button>
   <button id="matchBtn">Похожий год</button>
+  <button id="matchMBtn">Похожий мес</button>
   <button id="zr">Сброс зума</button>
   <button id="resetAll">По умолчанию</button>
  </div>
@@ -85,7 +86,7 @@ const ND=()=>res==="H"?M.H:M.Dn;
 const PERDAY=()=>res==="H"?24:1;
 let dom=[0,0], vy=[0,1];
 const sel={};
-let showCur=true, showMatch=false, showNorm=true, lookback="max";
+let showCur=true, showMatch=false, showMatchMonth=false, showNorm=true, lookback="max";
 const seaCache={}, matchCache={};
 const VW=1000,VH=560,L=48,R=940,T=18,B=496;
 const X=d=>L+(d-dom[0])/((dom[1]-dom[0])||1)*(R-L);
@@ -107,15 +108,19 @@ function seasonal(c){const key=c+"|"+lookback;if(seaCache[key])return seaCache[k
  use.forEach(y=>{const p=D[c].years[String(y)];for(let i=0;i<M.Dn;i++)avg[i]+=p[i];});for(let i=0;i<M.Dn;i++)avg[i]/=N;
  let lo=Infinity,hi=-Infinity;avg.forEach(v=>{if(v<lo)lo=v;if(v>hi)hi=v;});const idx=avg.map(v=>hi>lo?(v-lo)/(hi-lo)*100:0);
  return seaCache[key]={idx,avg,n:N,used:use};}
-function bestMatch(c){if(matchCache[c]!==undefined)return matchCache[c];const ys=D[c].yrs||[];const Lx=lastIdx(c);if(Lx<10||!ys.length){return matchCache[c]=null;}
- let best=null;ys.forEach(y=>{const r=corrW(D[c].cur,D[c].years[String(y)],0,Lx);if(r!=null&&(best==null||r>best.r))best={year:y,r};});
- if(best){best.rMonth=corrW(D[c].cur,D[c].years[String(best.year)],monthStart(),Lx);}return matchCache[c]=best;}
+function matches(c){if(matchCache[c]!==undefined)return matchCache[c];const ys=D[c].yrs||[];const Lx=lastIdx(c);if(Lx<10||!ys.length){return matchCache[c]=null;}
+ const ms=monthStart();let by=null,bm=null;
+ ys.forEach(y=>{const p=D[c].years[String(y)];const ry=corrW(D[c].cur,p,0,Lx);if(ry!=null&&(by==null||ry>by.r))by={year:y,r:ry};
+   const rm=corrW(D[c].cur,p,ms,Lx);if(rm!=null&&(bm==null||rm>bm.r))bm={year:y,r:rm};});
+ return matchCache[c]={year:by,month:bm};}
 function matchPct(c,y){const p=D[c].years[String(y)];return p.map(v=>(Math.exp(v/100)-1)*100);}
 function normSim(c,lo){const sd=seasonal(c);if(!sd.avg)return null;return corrW(D[c].cur,sd.avg,lo||0,lastIdx(c));}
 function seriesList(){const a=[];COINS.forEach(c=>{if(!sel[c])return;
  if(res==="D"){if(showNorm){const sd=seasonal(c);if(sd.idx)a.push({coin:c,kind:"seasonal",axis:"L",data:sd.idx,w:2.1,dash:0});}
    if(showCur)a.push({coin:c,kind:"current",axis:"R",data:D[c].cur,w:1.8,dash:1,glow:1});
-   if(showMatch){const bm=bestMatch(c);if(bm)a.push({coin:c,kind:"match",axis:"R",data:matchPct(c,bm.year),w:1.5,dash:2,year:bm.year});}
+   const mm=matches(c);
+   if(showMatch&&mm&&mm.year)a.push({coin:c,kind:"match",axis:"R",data:matchPct(c,mm.year.year),w:1.5,dash:2,year:mm.year.year,tag:"год"});
+   if(showMatchMonth&&mm&&mm.month)a.push({coin:c,kind:"match",axis:"R",data:matchPct(c,mm.month.year),w:1.5,dash:3,year:mm.month.year,tag:"мес"});
  }else{if(showNorm&&D[c].sea_h)a.push({coin:c,kind:"seasonal",axis:"L",data:D[c].sea_h,w:2.1,dash:0});
    if(showCur&&D[c].cur_h)a.push({coin:c,kind:"current",axis:"R",data:D[c].cur_h,w:1.8,dash:1,glow:1});}
 });return a;}
@@ -133,7 +138,7 @@ function render(){rscale();const SR=seriesList();const hasLeft=SR.some(s=>s.axis
  const NT=6;for(let k=0;k<=NT;k++){const di=dom[0]+(dom[1]-dom[0])*k/NT;s+='<text class="xtick" x="'+X(di).toFixed(1)+'" y="'+(B+17)+'" text-anchor="middle">'+dlab(Math.round(di))+'</text>';}
  const ti=res==="H"?M.today_h:M.today_d;if(ti>dom[0]&&ti<dom[1]){const nx=X(ti).toFixed(1);s+='<line x1="'+nx+'" x2="'+nx+'" y1="'+T+'" y2="'+B+'" stroke="var(--now)" stroke-width="1.2" stroke-dasharray="2 5"/>';s+='<text class="nowlbl" x="'+(+nx+5)+'" y="'+(T+11)+'">СЕЙЧАС</text>';}
  s+='<g clip-path="url(#clip)">';
- SR.forEach(se=>{const dd=path(se.data,se.axis);if(!dd)return;const col=color(se.coin);let st='';if(se.dash===1)st='stroke-dasharray="1 5" stroke-linecap="round"';else if(se.dash===2)st='stroke-dasharray="2 6" stroke-linecap="round" opacity="0.6"';const f=se.glow?' filter="url(#glow)"':'';s+='<path d="'+dd+'" fill="none" stroke="'+col+'" stroke-width="'+se.w+'" '+st+f+' stroke-linejoin="round"/>';});
+ SR.forEach(se=>{const dd=path(se.data,se.axis);if(!dd)return;const col=color(se.coin);let st='';if(se.dash===1)st='stroke-dasharray="1 5" stroke-linecap="round"';else if(se.dash===2)st='stroke-dasharray="2 6" stroke-linecap="round" opacity="0.6"';else if(se.dash===3)st='stroke-dasharray="6 3" stroke-linecap="round" opacity="0.6"';const f=se.glow?' filter="url(#glow)"':'';s+='<path d="'+dd+'" fill="none" stroke="'+col+'" stroke-width="'+se.w+'" '+st+f+' stroke-linejoin="round"/>';});
  s+='</g>';
  s+='<line id="guide" x1="0" x2="0" y1="'+T+'" y2="'+B+'" stroke="var(--axis)" opacity="0"/>';
  s+='</svg>';document.getElementById("svghost").innerHTML=s;}
@@ -146,10 +151,11 @@ function stats(){const el=document.getElementById("stats");el.innerHTML="";
  if(res!=="D"){el.innerHTML='<span class="stnote">похожесть и «похожий год» доступны в режиме «1 день»</span>';return;}
  const onc=COINS.filter(c=>sel[c]);if(!onc.length){return;}
  const msi=monthStart();const P=v=>(v==null?"—":Math.round(v*100)+"%");
- onc.forEach(c=>{const ny=normSim(c,0),nm=normSim(c,msi);const bm=bestMatch(c);
+ onc.forEach(c=>{const ny=normSim(c,0),nm=normSim(c,msi);const mm=matches(c);const by=mm&&mm.year,bmo=mm&&mm.month;
    let txt='<span class="srow"><span class="sdot" style="background:'+color(c)+'"></span><b>'+c+'</b>';
    txt+=' <span class="k">норма:</span> год '+P(ny)+' · мес '+P(nm);
-   txt+=' <span class="k">похож:</span> '+(bm?bm.year+" (год "+P(bm.r)+" · мес "+P(bm.rMonth)+")":"—")+'</span>';
+   txt+=' <span class="k">похож год:</span> '+(by?by.year+" "+P(by.r):"—");
+   txt+=' <span class="k">похож мес:</span> '+(bmo?bmo.year+" "+P(bmo.r):"—")+'</span>';
    const sp=document.createElement("span");sp.innerHTML=txt;el.appendChild(sp.firstChild);});}
 function vb(e){const svg=document.getElementById("svg");const r=svg.getBoundingClientRect();return{x:(e.clientX-r.left)/r.width*VW,y:(e.clientY-r.top)/r.height*VH};}
 function region(p){if(p.y>B||p.y<T)return"x";if(p.x<L||p.x>R)return"y";return"zoom";}
@@ -164,7 +170,7 @@ function bind(){const host=document.getElementById("plot");const tip=document.ge
      if(drag.mode==="x"){const span=dom[1]-dom[0];let di=(p.x-drag.lx)/(R-L)*span;drag.lx=p.x;let lo=dom[0]-di,hi=dom[1]-di;if(lo<0){hi-=lo;lo=0;}if(hi>ND()-1){lo-=(hi-(ND()-1));hi=ND()-1;}dom=[Math.max(0,lo),hi];render();return;}
      if(drag.mode==="y"){const span=vy[1]-vy[0];let df=(p.y-drag.ly)/(B-T)*span;drag.ly=p.y;let lo=vy[0]+df,hi=vy[1]+df;if(lo<0){hi-=lo;lo=0;}if(hi>1){lo-=(hi-1);hi=1;}vy=[Math.max(0,lo),Math.min(1,hi)];render();return;}}
    const d=Math.round(pxIndex(vb(e).x));const g=document.getElementById("guide");if(g){g.setAttribute("x1",X(d));g.setAttribute("x2",X(d));g.setAttribute("opacity","0.45");}
-   let html='<div class="tdate">'+dlab(d)+'</div>';let any=false;seriesList().forEach(se=>{const v=se.data[d];if(v==null)return;any=true;const lbl=se.kind==="seasonal"?"норма":(se.kind==="match"?se.year:"тек.");const txt=se.kind==="seasonal"?Math.round(v):((v>=0?"+":"")+v.toFixed(1)+"%");html+='<div class="trow"><span class="tsw" style="background:'+color(se.coin)+'"></span>'+se.coin+'<span class="tk">'+lbl+'</span><b>'+txt+'</b></div>';});
+   let html='<div class="tdate">'+dlab(d)+'</div>';let any=false;seriesList().forEach(se=>{const v=se.data[d];if(v==null)return;any=true;const lbl=se.kind==="seasonal"?"норма":(se.kind==="match"?(se.year+(se.tag?" "+se.tag:"")):"тек.");const txt=se.kind==="seasonal"?Math.round(v):((v>=0?"+":"")+v.toFixed(1)+"%");html+='<div class="trow"><span class="tsw" style="background:'+color(se.coin)+'"></span>'+se.coin+'<span class="tk">'+lbl+'</span><b>'+txt+'</b></div>';});
    if(!any){tip.style.display="none";return;}tip.innerHTML=html;tip.style.display="block";const px=e.clientX-r.left,tw=tip.offsetWidth;tip.style.left=Math.min(Math.max(px+16,4),r.width-tw-4)+"px";tip.style.top="4px";};
  const endDrag=e=>{if(!drag)return;const m=drag.mode;selr.style.display="none";selr.style.width="0";selr.style.height="0";
    if(m==="zoom"){const p=vb(e);const i1=pxIndex(p.x);const a=Math.round(Math.min(drag.i0,i1)),b=Math.round(Math.max(drag.i0,i1));const f1=fracAt(drag.vy0),f2=fracAt(p.y);const flo=Math.min(f1,f2),fhi=Math.max(f1,f2);let ch=false;
@@ -188,10 +194,11 @@ function start(){COINS=M.coins;
  const nb=document.getElementById("normBtn");nb.classList.toggle("on",showNorm);nb.onclick=()=>{showNorm=!showNorm;nb.classList.toggle("on",showNorm);redraw();};
  const cb=document.getElementById("curBtn");cb.classList.toggle("on",showCur);cb.onclick=()=>{showCur=!showCur;cb.classList.toggle("on",showCur);redraw();};
  const mb=document.getElementById("matchBtn");mb.onclick=()=>{showMatch=!showMatch;mb.classList.toggle("on",showMatch);redraw();};
+ const mmb=document.getElementById("matchMBtn");mmb.onclick=()=>{showMatchMonth=!showMatchMonth;mmb.classList.toggle("on",showMatchMonth);redraw();};
  document.getElementById("zr").onclick=()=>{dom=[0,ND()-1];vy=[0,1];redraw();};
- document.getElementById("resetAll").onclick=()=>{res="D";lookback="max";showNorm=true;showCur=true;showMatch=false;COINS.forEach((c,i)=>{sel[c]=(i===0);});dom=[0,ND()-1];vy=[0,1];
+ document.getElementById("resetAll").onclick=()=>{res="D";lookback="max";showNorm=true;showCur=true;showMatch=false;showMatchMonth=false;COINS.forEach((c,i)=>{sel[c]=(i===0);});dom=[0,ND()-1];vy=[0,1];
    document.getElementById("rH").classList.remove("on");document.getElementById("rD").classList.add("on");
-   document.getElementById("normBtn").classList.add("on");document.getElementById("curBtn").classList.add("on");document.getElementById("matchBtn").classList.remove("on");redraw();};
+   document.getElementById("normBtn").classList.add("on");document.getElementById("curBtn").classList.add("on");document.getElementById("matchBtn").classList.remove("on");document.getElementById("matchMBtn").classList.remove("on");redraw();};
  document.getElementById("rD").classList.add("on");
  redraw();window.addEventListener("resize",redraw);}
 fetch("data.json?t="+Date.now()).then(r=>r.json()).then(d=>{D=d;M=d._meta;start();}).catch(e=>{document.getElementById("status").textContent="Не удалось загрузить data.json. Обновите страницу позже.";});
