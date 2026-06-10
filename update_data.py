@@ -25,8 +25,8 @@ COINS = {                  # name -> (symbol, color, source)
     "LTC":  ("LTCUSDT",  "#94A3B8", "binance"),
     "TON":  ("TON-USDT", "#EF4444", "okx"),
     "ZEC":  ("ZECUSDT",  "#FDE047", "binance"),
-    "XAU":  ("xauusd",   "#FFD24A", "stooq"),
-    "XAG":  ("xagusd",   "#D6DCE6", "stooq"),
+    "XAU":  ("GC=F",     "#FFD24A", "yahoo"),
+    "XAG":  ("SI=F",     "#D6DCE6", "yahoo"),
 }
 METAL_FIRST_YEAR = 1990    # don't go absurdly far back for metals
 CG = {"BTC":"bitcoin","ETH":"ethereum","BNB":"binancecoin","SOL":"solana","XRP":"ripple",
@@ -36,6 +36,7 @@ BINANCE = "https://data-api.binance.vision/api/v3/klines"
 BYBIT   = "https://api.bybit.com/v5/market/kline"
 OKX     = "https://www.okx.com/api/v5/market/history-candles"
 STOOQ   = "https://stooq.com/q/d/l/"
+YF      = "https://query1.finance.yahoo.com/v8/finance/chart/"
 UA = {"User-Agent": "Mozilla/5.0 (seasonal-index-bot)"}
 HRS, DAYS = 365 * 24, 365
 CRYPTO = {"binance", "okx", "bybit"}
@@ -117,6 +118,23 @@ def fetch_stooq(symbol):
             continue
     return out
 
+def fetch_yahoo(symbol):
+    out = []
+    url = YF + urllib.parse.quote(symbol) + "?period1=0&period2=9999999999&interval=1d"
+    try:
+        with get(url) as r: j = json.load(r)
+    except Exception as e:
+        print("  yahoo error", symbol, e); return out
+    try:
+        res = j["chart"]["result"][0]
+        ts = res["timestamp"]; cl = res["indicators"]["quote"][0]["close"]
+        for t, c in zip(ts, cl):
+            if c is None: continue
+            out.append([int(t) * 1000, float(c)])
+    except Exception as e:
+        print("  yahoo parse error", symbol, e)
+    return out
+
 def daily_years(rows, this_year, first_year):
     """-> years={Y:[365 cumLog]}, cur=[365 % partial], yrs=[...]"""
     if not rows: return {}, [None]*DAYS, []
@@ -187,8 +205,8 @@ def main():
     FETCH = {"binance": fetch_binance, "bybit": fetch_bybit, "okx": fetch_okx}
     out = {}
     for name, (sym, color, src) in COINS.items():
-        if src == "stooq":
-            rows = fetch_stooq(sym); fy = METAL_FIRST_YEAR
+        if src in ("yahoo", "stooq"):
+            rows = fetch_yahoo(sym) if src == "yahoo" else fetch_stooq(sym); fy = METAL_FIRST_YEAR
         else:
             fetch = FETCH.get(src, fetch_binance); rows = []; fy = FIRST_YEAR
             for y in range(FIRST_YEAR, this_year + 1):
