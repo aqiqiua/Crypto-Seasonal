@@ -1,18 +1,18 @@
 """
-Auto-updater for the seasonal-index page (FULL YEAR, multi-exchange).
-1h candles per calendar year from Binance or Bybit (per coin), seasonal index
-(UTC+3, hourly+daily, cumulative log-return from Jan 1, averaged over complete
-years, min-max 0-100). Coin order sorted by live market cap (CoinGecko).
-Writes data.json. Run by GitHub Actions daily.
-
-Add a coin: one line in COINS -> (symbol, color, source). source: binance|bybit.
+Seasonal-index updater (FULL YEAR, multi-source, per-year data).
+Per coin we ship EACH complete year's daily cumulative-log path (so the page can
+re-average over a chosen lookback, measure similarity, and overlay a single year),
+the current-year actual % path, plus (for crypto) an hourly averaged seasonal
+index for the intraday detail view.
+Sources: binance | okx | bybit (crypto, hourly) ; stooq (metals, daily only).
+Add an asset: one line in COINS -> (symbol, color, source).
 """
-import json, time, datetime as dt, urllib.request, urllib.parse
+import json, time, csv, io, datetime as dt, urllib.request, urllib.parse
 import numpy as np, pandas as pd
 
 TZ = 3
-FIRST_YEAR = 2018
-COINS = {                      # name -> (symbol, color, source)
+FIRST_YEAR = 2018          # crypto start; metals use all available history
+COINS = {                  # name -> (symbol, color, source)
     "BTC":  ("BTCUSDT",  "#FB7E14", "binance"),
     "ETH":  ("ETHUSDT",  "#818CF8", "binance"),
     "BNB":  ("BNBUSDT",  "#A3E635", "binance"),
@@ -25,19 +25,24 @@ COINS = {                      # name -> (symbol, color, source)
     "LTC":  ("LTCUSDT",  "#94A3B8", "binance"),
     "TON":  ("TON-USDT", "#EF4444", "okx"),
     "ZEC":  ("ZECUSDT",  "#FDE047", "binance"),
+    "XAU":  ("xauusd",   "#FFD24A", "stooq"),
+    "XAG":  ("xagusd",   "#D6DCE6", "stooq"),
 }
+METAL_FIRST_YEAR = 1990    # don't go absurdly far back for metals
 CG = {"BTC":"bitcoin","ETH":"ethereum","BNB":"binancecoin","SOL":"solana","XRP":"ripple",
       "DOGE":"dogecoin","TRX":"tron","LINK":"chainlink","BCH":"bitcoin-cash","LTC":"litecoin",
       "TON":"the-open-network","ZEC":"zcash"}
 BINANCE = "https://data-api.binance.vision/api/v3/klines"
 BYBIT   = "https://api.bybit.com/v5/market/kline"
 OKX     = "https://www.okx.com/api/v5/market/history-candles"
+STOOQ   = "https://stooq.com/q/d/l/"
 UA = {"User-Agent": "Mozilla/5.0 (seasonal-index-bot)"}
 HRS, DAYS = 365 * 24, 365
+CRYPTO = {"binance", "okx", "bybit"}
 
 def ms(d): return int(d.replace(tzinfo=dt.timezone.utc).timestamp() * 1000)
 def get(url):
-    return urllib.request.urlopen(urllib.request.Request(url, headers=UA), timeout=30)
+    return urllib.request.urlopen(urllib.request.Request(url, headers=UA), timeout=40)
 
 def fetch_binance(symbol, start, end):
     out, cur, endms = [], ms(start), ms(end)
@@ -64,8 +69,6 @@ def fetch_bybit(symbol, start, end):
             with get(BYBIT + "?" + q) as r: j = json.load(r)
         except Exception as e:
             print("  bybit error", symbol, e); break
-        if j.get("retCode") not in (0, None):
-            print("  bybit retCode", j.get("retCode"), j.get("retMsg")); break
         lst = (j.get("result") or {}).get("list") or []
         if not lst: break
         for k in lst: out.append([int(k[0]), float(k[4])])
@@ -94,67 +97,116 @@ def fetch_okx(inst, start, end):
         time.sleep(0.15)
     return out
 
-def build(rows, freq, periods, this_year):
-    if not rows: return [None]*periods, [None]*periods, []
+def fetch_stooq(symbol):
+    out = []
+    try:
+        with get(STOOQ + "?" + urllib.parse.urlencode({"s": symbol, "i": "d"})) as r:
+            text = r.read().decode("utf-8", "replace")
+    except Exception as e:
+        print("  stooq error", symbol, e); return out
+    rd = csv.reader(io.StringIO(text))
+    head = next(rd, None)
+    if not head or "Date" not in head[0]:
+        print("  stooq bad response", symbol, text[:60]); return out
+    for row in rd:
+        if len(row) < 5: continue
+        try:
+            t = ms(dt.datetime.strptime(row[0], "%Y-%m-%d"))
+            out.append([t, float(row[4])])
+        except Exception:
+            continue
+    return out
+
+def daily_years(rows, this_year, first_year):
+    """-> years={Y:[365 cumLog]}, cur=[365 % partial], yrs=[...]"""
+    if not rows: return {}, [None]*DAYS, []
     df = pd.DataFrame(rows, columns=["t", "close"]).drop_duplicates("t")
     df["loc"] = pd.to_datetime(df["t"], unit="ms", utc=True).dt.tz_localize(None) + pd.Timedelta(hours=TZ)
     df = df.set_index("loc").sort_index()
-    paths, cur, cur_fmax = {}, None, -1.0
-    grid = np.linspace(0, 1, periods)
+    grid = np.linspace(0, 1, DAYS)
+    years, cur = {}, [None]*DAYS
     for y in sorted(set(df.index.year)):
+        if y < first_year: continue
         yr0 = pd.Timestamp(y, 1, 1); yr1 = pd.Timestamp(y, 12, 31, 23)
         span = (yr1 - yr0).total_seconds()
         g = df.loc[(df.index >= yr0) & (df.index <= pd.Timestamp(y, 12, 31, 23, 59)), "close"]
-        if g.empty: continue
-        g = g.resample(freq).last().ffill().bfill()
+        g = g.resample("D").last().ffill().bfill()
         if g.empty: continue
         base = g.iloc[0]
         x = (g.index - yr0).total_seconds().values / span
         if y == this_year:
-            cur = np.interp(grid, x, ((g.values / base) - 1) * 100); cur_fmax = float(x[-1])
+            cv = np.interp(grid, x, ((g.values / base) - 1) * 100)
+            cur = [None if grid[i] > x[-1] else round(float(cv[i]), 3) for i in range(DAYS)]
+        elif x[0] <= 0.03 and x[-1] >= 0.97:
+            cl = np.interp(grid, x, (np.log(g.values) - np.log(base)) * 100)
+            years[y] = [round(float(v), 3) for v in cl]
+    return years, cur, sorted(years)
+
+def build_hourly(rows, this_year):
+    """existing averaged hourly seasonal index (max window) for crypto detail view"""
+    if not rows: return None, None
+    df = pd.DataFrame(rows, columns=["t", "close"]).drop_duplicates("t")
+    df["loc"] = pd.to_datetime(df["t"], unit="ms", utc=True).dt.tz_localize(None) + pd.Timedelta(hours=TZ)
+    df = df.set_index("loc").sort_index()
+    grid = np.linspace(0, 1, HRS); paths = {}; cur = None; fmax = -1.0
+    for y in sorted(set(df.index.year)):
+        yr0 = pd.Timestamp(y, 1, 1); yr1 = pd.Timestamp(y, 12, 31, 23)
+        span = (yr1 - yr0).total_seconds()
+        g = df.loc[(df.index >= yr0) & (df.index <= pd.Timestamp(y, 12, 31, 23, 59)), "close"]
+        g = g.resample("h").last().ffill().bfill()
+        if g.empty: continue
+        base = g.iloc[0]; x = (g.index - yr0).total_seconds().values / span
+        if y == this_year:
+            cur = np.interp(grid, x, ((g.values / base) - 1) * 100); fmax = float(x[-1])
         elif x[0] <= 0.03 and x[-1] >= 0.97:
             paths[y] = np.interp(grid, x, (np.log(g.values) - np.log(base)) * 100)
-    comp = sorted(paths)
-    if not comp: return [None]*periods, [None]*periods, []
-    avg = np.mean(np.vstack([paths[y] for y in comp]), axis=0)
+    if not paths: return None, None
+    avg = np.mean(np.vstack([paths[y] for y in sorted(paths)]), axis=0)
     lo, hi = float(np.min(avg)), float(np.max(avg))
     idx0 = (avg - lo) / (hi - lo) * 100 if hi > lo else avg * 0
-    cv = [None if (cur is None or grid[i] > cur_fmax) else round(float(cur[i]), 2) for i in range(periods)]
-    return [round(float(v), 2) for v in idx0], cv, comp
+    cv = [None if (cur is None or grid[i] > fmax) else round(float(cur[i]), 2) for i in range(HRS)]
+    return [round(float(v), 2) for v in idx0], cv
 
 def market_cap_order(names):
+    cryptos = [n for n in names if n in CG]
+    metals = [n for n in names if n not in CG]
     try:
-        ids = ",".join(CG[n] for n in names)
+        ids = ",".join(CG[n] for n in cryptos)
         url = "https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids=" + ids + "&per_page=250"
         with get(url) as r: data = json.load(r)
         cap = {d["id"]: (d.get("market_cap") or 0) for d in data}
-        order = sorted(names, key=lambda n: cap.get(CG[n], 0), reverse=True)
-        print("market-cap order:", order); return order
+        cryptos.sort(key=lambda n: cap.get(CG[n], 0), reverse=True)
     except Exception as e:
-        print("coingecko order failed, keeping default:", e); return names
+        print("coingecko order failed, keeping default:", e)
+    order = cryptos + metals
+    print("order:", order); return order
 
 def main():
     now_local = dt.datetime.now(dt.timezone.utc).replace(tzinfo=None) + dt.timedelta(hours=TZ)
     this_year = now_local.year
-    out = {}
     FETCH = {"binance": fetch_binance, "bybit": fetch_bybit, "okx": fetch_okx}
+    out = {}
     for name, (sym, color, src) in COINS.items():
-        fetch = FETCH.get(src, fetch_binance)
-        rows = []
-        for y in range(FIRST_YEAR, this_year + 1):
-            rows += fetch(sym, dt.datetime(y, 1, 1), dt.datetime(y + 1, 1, 1, 3))
-        if not rows and src != "binance":
-            fb = sym.replace("-", "")
-            print(f"  {name}: {src} empty -> fallback Binance {fb}")
+        if src == "stooq":
+            rows = fetch_stooq(sym); fy = METAL_FIRST_YEAR
+        else:
+            fetch = FETCH.get(src, fetch_binance); rows = []; fy = FIRST_YEAR
             for y in range(FIRST_YEAR, this_year + 1):
-                rows += fetch_binance(fb, dt.datetime(y, 1, 1), dt.datetime(y + 1, 1, 1, 3))
-        sea_h, cur_h, comp = build(rows, "h", HRS, this_year)
-        sea_d, cur_d, _    = build(rows, "D", DAYS, this_year)
-        win = f"{comp[0]}-{comp[-1]} ({len(comp)}-Yr)" if comp else "n/a"
-        out[name] = {"color": color, "window": win,
-                     "sea_h": sea_h, "cur_h": cur_h, "sea_d": sea_d, "cur_d": cur_d}
-        print(f"{name} [{src}]: {win}  rows={len(rows)}")
-    order = market_cap_order([n for n in COINS])
+                rows += fetch(sym, dt.datetime(y, 1, 1), dt.datetime(y + 1, 1, 1, 3))
+            if not rows:
+                fb = sym.replace("-", "")
+                print(f"  {name}: {src} empty -> fallback Binance {fb}")
+                for y in range(FIRST_YEAR, this_year + 1):
+                    rows += fetch_binance(fb, dt.datetime(y, 1, 1), dt.datetime(y + 1, 1, 1, 3))
+        years, cur, yrs = daily_years(rows, this_year, fy)
+        sea_h = cur_h = None
+        if src in CRYPTO and rows:
+            sea_h, cur_h = build_hourly(rows, this_year)
+        out[name] = {"color": color, "yrs": yrs, "years": {str(y): years[y] for y in yrs},
+                     "cur": cur, "sea_h": sea_h, "cur_h": cur_h, "daily": src == "stooq"}
+        span = f"{yrs[0]}-{yrs[-1]} ({len(yrs)}-Yr)" if yrs else "n/a"
+        print(f"{name} [{src}]: {span}  rows={len(rows)}")
+    order = market_cap_order(list(COINS))
     yr0 = dt.datetime(this_year, 1, 1); yr1 = dt.datetime(this_year, 12, 31, 23)
     frac = min(max((now_local - yr0).total_seconds() / (yr1 - yr0).total_seconds(), 0.0), 1.0)
     months = ["","января","февраля","марта","апреля","мая","июня","июля","августа","сентября","октября","ноября","декабря"]
