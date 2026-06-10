@@ -23,7 +23,7 @@ COINS = {                      # name -> (symbol, color, source)
     "LINK": ("LINKUSDT", "#3B82F6", "binance"),
     "BCH":  ("BCHUSDT",  "#22C55E", "binance"),
     "LTC":  ("LTCUSDT",  "#94A3B8", "binance"),
-    "TON":  ("TONUSDT",  "#EF4444", "bybit"),
+    "TON":  ("TON-USDT", "#EF4444", "okx"),
     "ZEC":  ("ZECUSDT",  "#FDE047", "binance"),
 }
 CG = {"BTC":"bitcoin","ETH":"ethereum","BNB":"binancecoin","SOL":"solana","XRP":"ripple",
@@ -31,6 +31,7 @@ CG = {"BTC":"bitcoin","ETH":"ethereum","BNB":"binancecoin","SOL":"solana","XRP":
       "TON":"the-open-network","ZEC":"zcash"}
 BINANCE = "https://data-api.binance.vision/api/v3/klines"
 BYBIT   = "https://api.bybit.com/v5/market/kline"
+OKX     = "https://www.okx.com/api/v5/market/history-candles"
 UA = {"User-Agent": "Mozilla/5.0 (seasonal-index-bot)"}
 HRS, DAYS = 365 * 24, 365
 
@@ -74,6 +75,25 @@ def fetch_bybit(symbol, start, end):
         time.sleep(0.2)
     return out
 
+def fetch_okx(inst, start, end):
+    out, startms, after = [], ms(start), ms(end)
+    while after > startms:
+        q = urllib.parse.urlencode({"instId": inst, "bar": "1H", "after": after, "limit": 100})
+        try:
+            with get(OKX + "?" + q) as r: j = json.load(r)
+        except Exception as e:
+            print("  okx error", inst, e); break
+        if str(j.get("code")) not in ("0", "None"):
+            print("  okx code", j.get("code"), j.get("msg")); break
+        data = j.get("data") or []
+        if not data: break
+        for k in data: out.append([int(k[0]), float(k[4])])
+        oldest = int(data[-1][0])
+        if oldest <= startms or len(data) < 100: break
+        after = oldest
+        time.sleep(0.15)
+    return out
+
 def build(rows, freq, periods, this_year):
     if not rows: return [None]*periods, [None]*periods, []
     df = pd.DataFrame(rows, columns=["t", "close"]).drop_duplicates("t")
@@ -114,14 +134,20 @@ def market_cap_order(names):
         print("coingecko order failed, keeping default:", e); return names
 
 def main():
-    now_local = dt.datetime.utcnow() + dt.timedelta(hours=TZ)
+    now_local = dt.datetime.now(dt.timezone.utc).replace(tzinfo=None) + dt.timedelta(hours=TZ)
     this_year = now_local.year
     out = {}
+    FETCH = {"binance": fetch_binance, "bybit": fetch_bybit, "okx": fetch_okx}
     for name, (sym, color, src) in COINS.items():
-        fetch = fetch_bybit if src == "bybit" else fetch_binance
+        fetch = FETCH.get(src, fetch_binance)
         rows = []
         for y in range(FIRST_YEAR, this_year + 1):
             rows += fetch(sym, dt.datetime(y, 1, 1), dt.datetime(y + 1, 1, 1, 3))
+        if not rows and src != "binance":
+            fb = sym.replace("-", "")
+            print(f"  {name}: {src} empty -> fallback Binance {fb}")
+            for y in range(FIRST_YEAR, this_year + 1):
+                rows += fetch_binance(fb, dt.datetime(y, 1, 1), dt.datetime(y + 1, 1, 1, 3))
         sea_h, cur_h, comp = build(rows, "h", HRS, this_year)
         sea_d, cur_d, _    = build(rows, "D", DAYS, this_year)
         win = f"{comp[0]}-{comp[-1]} ({len(comp)}-Yr)" if comp else "n/a"
