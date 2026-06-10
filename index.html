@@ -35,6 +35,8 @@
  .stats .k{color:var(--faint)}
  .stats b{color:var(--ink)}
  .stnote{font-family:var(--mono);font-size:11px;color:var(--faint)}
+ .suggest{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:2px 2px 4px;font-family:var(--mono);font-size:12px;color:var(--mut);min-height:10px}
+ .suggest .sg b{font-weight:750}
  #plot{position:relative;width:100%;cursor:crosshair;min-height:320px}
  #svg{width:100%;height:auto;display:block;touch-action:none}
  #sel{position:absolute;display:none;background:rgba(125,140,255,.12);border:1px solid rgba(125,140,255,.6);border-radius:2px;pointer-events:none}
@@ -65,6 +67,7 @@
   <button id="resetAll">По умолчанию</button>
  </div>
  <div class="assets" id="assets"></div>
+ <div class="suggest" id="suggest"></div>
  <div class="stats" id="stats"></div>
  <div id="plot"><div id="svghost"><div class="status" id="status">Загрузка данных…</div></div><div id="sel"></div><div id="tip"></div></div>
  <div class="foot">Обновление раз в сутки · UTC+3</div>
@@ -97,16 +100,18 @@ function anyMetalSel(){return COINS.some(c=>sel[c]&&isMetal(c));}
 function lookbackOptions(){return anyMetalSel()?[5,15,"max"]:[3,5,"max"];}
 function lbButtons(){const opts=lookbackOptions();const el=document.getElementById("lbBtns");el.innerHTML="";opts.forEach(o=>{const b=document.createElement("button");b.className="gbtn"+(lookback===o?" on":"");b.textContent=o==="max"?"Макс":o;b.onclick=()=>setLB(o);el.appendChild(b);});}
 function lastIdx(c){const a=D[c].cur;for(let i=a.length-1;i>=0;i--)if(a[i]!=null)return i;return -1;}
-function corr(a,b,L){let xs=[],ys=[];for(let i=0;i<=L;i++){const u=a[i],v=b[i];if(u==null||v==null||isNaN(u)||isNaN(v))continue;xs.push(u);ys.push(v);}const n=xs.length;if(n<6)return null;let mx=0,my=0;for(let i=0;i<n;i++){mx+=xs[i];my+=ys[i];}mx/=n;my/=n;let sxy=0,sxx=0,syy=0;for(let i=0;i<n;i++){const dx=xs[i]-mx,dy=ys[i]-my;sxy+=dx*dy;sxx+=dx*dx;syy+=dy*dy;}if(sxx<=0||syy<=0)return null;return sxy/Math.sqrt(sxx*syy);}
+function corrW(a,b,lo,hi){let xs=[],ys=[];for(let i=lo;i<=hi;i++){const u=a[i],v=b[i];if(u==null||v==null||isNaN(u)||isNaN(v))continue;xs.push(u);ys.push(v);}const n=xs.length;if(n<6)return null;let mx=0,my=0;for(let i=0;i<n;i++){mx+=xs[i];my+=ys[i];}mx/=n;my/=n;let sxy=0,sxx=0,syy=0;for(let i=0;i<n;i++){const dx=xs[i]-mx,dy=ys[i]-my;sxy+=dx*dy;sxx+=dx*dx;syy+=dy*dy;}if(sxx<=0||syy<=0)return null;return sxy/Math.sqrt(sxx*syy);}
+function monthStart(){const d=M.today_d;let m=0;for(let i=0;i<12;i++){if(MSTART[i]<=d)m=i;}return MSTART[m];}
 function seasonal(c){const key=c+"|"+lookback;if(seaCache[key])return seaCache[key];const ys=D[c].yrs||[];if(!ys.length){return seaCache[key]={idx:null,avg:null,n:0};}
  const N=lookback==="max"?ys.length:Math.min(lookback,ys.length);const use=ys.slice(-N);const avg=new Array(M.Dn).fill(0);
  use.forEach(y=>{const p=D[c].years[String(y)];for(let i=0;i<M.Dn;i++)avg[i]+=p[i];});for(let i=0;i<M.Dn;i++)avg[i]/=N;
  let lo=Infinity,hi=-Infinity;avg.forEach(v=>{if(v<lo)lo=v;if(v>hi)hi=v;});const idx=avg.map(v=>hi>lo?(v-lo)/(hi-lo)*100:0);
  return seaCache[key]={idx,avg,n:N,used:use};}
 function bestMatch(c){if(matchCache[c]!==undefined)return matchCache[c];const ys=D[c].yrs||[];const Lx=lastIdx(c);if(Lx<10||!ys.length){return matchCache[c]=null;}
- let best=null;ys.forEach(y=>{const r=corr(D[c].cur,D[c].years[String(y)],Lx);if(r!=null&&(best==null||r>best.r))best={year:y,r};});return matchCache[c]=best;}
+ let best=null;ys.forEach(y=>{const r=corrW(D[c].cur,D[c].years[String(y)],0,Lx);if(r!=null&&(best==null||r>best.r))best={year:y,r};});
+ if(best){best.rMonth=corrW(D[c].cur,D[c].years[String(best.year)],monthStart(),Lx);}return matchCache[c]=best;}
 function matchPct(c,y){const p=D[c].years[String(y)];return p.map(v=>(Math.exp(v/100)-1)*100);}
-function normSim(c){const sd=seasonal(c);if(!sd.avg)return null;return corr(D[c].cur,sd.avg,lastIdx(c));}
+function normSim(c,lo){const sd=seasonal(c);if(!sd.avg)return null;return corrW(D[c].cur,sd.avg,lo||0,lastIdx(c));}
 function seriesList(){const a=[];COINS.forEach(c=>{if(!sel[c])return;
  if(res==="D"){if(showNorm){const sd=seasonal(c);if(sd.idx)a.push({coin:c,kind:"seasonal",axis:"L",data:sd.idx,w:2.1,dash:0});}
    if(showCur)a.push({coin:c,kind:"current",axis:"R",data:D[c].cur,w:1.8,dash:1,glow:1});
@@ -134,15 +139,17 @@ function render(){rscale();const SR=seriesList();const hasLeft=SR.some(s=>s.axis
  s+='</svg>';document.getElementById("svghost").innerHTML=s;}
 function assets(){const el=document.getElementById("assets");el.innerHTML="";COINS.forEach(c=>{const on=!!sel[c];const chip=document.createElement("button");chip.className="achip"+(on?" on":"");chip.tabIndex=0;if(on)chip.style.borderColor=color(c);
   let val="";if(on&&showCur&&res==="D"){const a=D[c].cur,L=lastIdx(c);if(L>=0){const v=a[L];val=' <b style="color:'+(v>=0?"#46d39a":"#ff6b6b")+'">'+(v>=0?"+":"")+v.toFixed(0)+'%</b>';}}
-  chip.innerHTML='<span class="dot" style="background:'+color(c)+'"></span>'+c+' <span class="yrs">'+years(c)+'</span>'+val;
+  const star=(D[c]&&D[c].suggested)?"★ ":"";
+  chip.innerHTML='<span class="dot" style="background:'+color(c)+'"></span>'+star+c+' <span class="yrs">'+years(c)+'</span>'+val;
   const tog=()=>{sel[c]=!sel[c];redraw();};chip.onclick=tog;chip.onkeydown=e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();tog();}};el.appendChild(chip);});}
 function stats(){const el=document.getElementById("stats");el.innerHTML="";
  if(res!=="D"){el.innerHTML='<span class="stnote">похожесть и «похожий год» доступны в режиме «1 день»</span>';return;}
  const onc=COINS.filter(c=>sel[c]);if(!onc.length){return;}
- onc.forEach(c=>{const ns=normSim(c);const bm=bestMatch(c);
+ const msi=monthStart();const P=v=>(v==null?"—":Math.round(v*100)+"%");
+ onc.forEach(c=>{const ny=normSim(c,0),nm=normSim(c,msi);const bm=bestMatch(c);
    let txt='<span class="srow"><span class="sdot" style="background:'+color(c)+'"></span><b>'+c+'</b>';
-   txt+=' <span class="k">норма:</span> '+(ns==null?"—":Math.round(ns*100)+"%");
-   txt+=' <span class="k">похож:</span> '+(bm?bm.year+" ("+Math.round(bm.r*100)+"%)":"—")+'</span>';
+   txt+=' <span class="k">норма:</span> год '+P(ny)+' · мес '+P(nm);
+   txt+=' <span class="k">похож:</span> '+(bm?bm.year+" (год "+P(bm.r)+" · мес "+P(bm.rMonth)+")":"—")+'</span>';
    const sp=document.createElement("span");sp.innerHTML=txt;el.appendChild(sp.firstChild);});}
 function vb(e){const svg=document.getElementById("svg");const r=svg.getBoundingClientRect();return{x:(e.clientX-r.left)/r.width*VW,y:(e.clientY-r.top)/r.height*VH};}
 function region(p){if(p.y>B||p.y<T)return"x";if(p.x<L||p.x>R)return"y";return"zoom";}
@@ -167,7 +174,10 @@ function bind(){const host=document.getElementById("plot");const tip=document.ge
    drag=null;};
  host.onmouseup=endDrag;host.onmouseleave=e=>{if(drag&&drag.mode==="zoom")endDrag(e);else drag=null;tip.style.display="none";const g=document.getElementById("guide");if(g)g.setAttribute("opacity","0");};
  host.ondblclick=e=>{const reg=region(vb(e));if(reg==="x"){dom=[0,ND()-1];}else if(reg==="y"){vy=[0,1];}else{dom=[0,ND()-1];vy=[0,1];}redraw();};}
-function redraw(){const opts=lookbackOptions();if(opts.indexOf(lookback)<0){lookback="max";for(const k in seaCache)delete seaCache[k];}render();assets();stats();lbButtons();bind();}
+function suggestBar(){const el=document.getElementById("suggest");el.innerHTML="";const c=COINS.find(x=>D[x]&&D[x].suggested);if(!c||!D[c].match){return;}const mt=D[c].match;const on=!!sel[c];
+ const span=document.createElement("span");span.className="sg";span.innerHTML='★ топ-50: <b style="color:'+color(c)+'">'+c+'</b> похож на '+mt.year+' · '+Math.round(mt.score*100)+'%';el.appendChild(span);
+ const btn=document.createElement("button");btn.className="gbtn"+(on?" on":"");btn.textContent=on?"скрыть":"показать";btn.onclick=()=>{sel[c]=!sel[c];redraw();};el.appendChild(btn);}
+function redraw(){const opts=lookbackOptions();if(opts.indexOf(lookback)<0){lookback="max";for(const k in seaCache)delete seaCache[k];}render();assets();stats();lbButtons();suggestBar();bind();}
 function setRes(r){if(res===r)return;res=r;dom=[0,ND()-1];vy=[0,1];document.getElementById("rH").classList.toggle("on",r==="H");document.getElementById("rD").classList.toggle("on",r==="D");redraw();}
 function setLB(v){lookback=v;for(const k in seaCache)delete seaCache[k];redraw();}
 function start(){COINS=M.coins;
