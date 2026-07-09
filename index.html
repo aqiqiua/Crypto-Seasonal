@@ -127,6 +127,22 @@
  .embed .wrap{padding:14px 16px}
  .embed .chartcard{margin-top:10px}
  .embed .head{margin-bottom:4px}
+ .modal{position:fixed;inset:0;z-index:60;display:flex;align-items:center;justify-content:center;padding:16px}
+ .mback{position:absolute;inset:0;background:rgba(4,8,16,.62);backdrop-filter:blur(3px)}
+ .mbox{position:relative;width:min(500px,94vw);padding:22px 22px 20px;border-radius:20px;background:#0d1524;border:1px solid rgba(148,163,184,.16);box-shadow:0 30px 80px rgba(0,0,0,.6)}
+ .mhd{display:flex;align-items:center;justify-content:space-between;font:800 15px var(--sans);color:var(--text)}
+ .mx{background:none;border:none;color:var(--muted);font-size:16px;cursor:pointer;line-height:1;padding:2px 4px}
+ .mx:hover{color:var(--text)}
+ .mlab{margin:16px 0 7px;font:800 9.5px var(--mono);letter-spacing:.16em;color:var(--muted)}
+ .linkrow{display:flex;gap:8px}
+ .linkrow input{flex:1;min-width:0;padding:11px 12px;border-radius:10px;background:rgba(148,163,184,.08);border:1px solid rgba(148,163,184,.16);color:var(--text2);font:500 12px var(--mono);outline:none}
+ .linkrow input:focus{border-color:rgba(52,211,153,.4)}
+ .mbtn{padding:11px 16px;border-radius:10px;border:none;background:linear-gradient(135deg,#34D399,#14B8A6);color:#062B1F;font:800 12px var(--sans);cursor:pointer;white-space:nowrap;transition:.15s}
+ .mbtn:hover{filter:brightness(1.06)}
+ .mrow2{display:flex;gap:8px;flex-wrap:wrap}
+ .mbtn2{flex:1;min-width:150px;padding:12px 14px;border-radius:10px;border:1px solid rgba(148,163,184,.16);background:rgba(148,163,184,.06);color:var(--text);font:700 12px var(--sans);cursor:pointer;transition:.15s}
+ .mbtn2:hover{border-color:rgba(52,211,153,.4);background:rgba(52,211,153,.08)}
+ .mhint{margin-top:16px;font:500 11px/1.5 var(--sans);color:rgba(148,163,184,.5)}
  #plot{position:relative;width:100%}
  #svg{width:100%;height:auto;display:block;overflow:visible;touch-action:none;cursor:crosshair}
  #tip{position:absolute;display:none;pointer-events:none;z-index:5;min-width:158px;padding:11px 13px;border-radius:14px;background:rgba(12,18,32,.86);border:1px solid rgba(148,163,184,.2);backdrop-filter:blur(10px);box-shadow:0 14px 40px rgba(0,0,0,.5)}
@@ -189,7 +205,7 @@
   <div class="chartcard">
    <div class="chead">
     <div class="lft"><span class="ttl">SEASONAL PATTERN · JAN–DEC</span><span id="zpill"></span></div>
-    <div class="crt"><button class="mini" id="pngBtn">PNG</button><button class="mini" id="embedBtn">Embed</button><span class="hint"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 3v4M12 17v4M3 12h4M17 12h4"></path><circle cx="12" cy="12" r="2.5"></circle></svg>Hover · drag to zoom</span></div>
+    <span class="hint"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 3v4M12 17v4M3 12h4M17 12h4"></path><circle cx="12" cy="12" r="2.5"></circle></svg>Hover for values · drag to zoom</span>
    </div>
    <div id="plot"><div id="svghost"><div class="status" id="status">Loading data…</div></div><div id="tip"></div></div>
   </div>
@@ -198,6 +214,18 @@
   <div class="micro" id="micro"></div>
 
   <div class="foot">UPDATES ONCE A DAY · UTC+3</div>
+ </div>
+
+ <div class="modal" id="shareModal" hidden>
+  <div class="mback" id="shareBack"></div>
+  <div class="mbox">
+   <div class="mhd"><span>Share this view</span><button class="mx" id="shareClose">✕</button></div>
+   <div class="mlab">Link — opens this exact chart</div>
+   <div class="linkrow"><input id="shareUrl" readonly value=""><button class="mbtn" id="copyLink">Copy link</button></div>
+   <div class="mlab">Image &amp; embed</div>
+   <div class="mrow2"><button class="mbtn2" id="dlPng">⬇  Download PNG</button><button class="mbtn2" id="copyEmbed">&lt;/&gt;  Copy embed code</button></div>
+   <div class="mhint">The link and embed carry the selected assets, timeframe, years and toggles — anyone who opens it sees the same view.</div>
+  </div>
  </div>
 </div>
 <script>
@@ -420,7 +448,10 @@ function exportPNG(){const svg=document.getElementById("svg");if(!svg)return;con
  const t=document.createElementNS(NS,"text");t.setAttribute("x",VW-8);t.setAttribute("y",VH-6);t.setAttribute("text-anchor","end");t.setAttribute("fill","rgba(148,163,184,.5)");t.setAttribute("font-size","10");t.setAttribute("font-family","monospace");t.textContent="aqiqiua.github.io/Crypto-Seasonal · "+(selCoins().join(" · ")||"");clone.appendChild(t);
  const str=new XMLSerializer().serializeToString(clone);const url=URL.createObjectURL(new Blob([str],{type:"image/svg+xml;charset=utf-8"}));
  const img=new Image();img.onload=()=>{const sc=2,cv=document.createElement("canvas");cv.width=VW*sc;cv.height=VH*sc;const ctx=cv.getContext("2d");ctx.fillStyle="#080D1A";ctx.fillRect(0,0,cv.width,cv.height);ctx.drawImage(img,0,0,cv.width,cv.height);URL.revokeObjectURL(url);cv.toBlob(b=>{const a=document.createElement("a");a.href=URL.createObjectURL(b);a.download="seasonal-"+(selCoins().join("-")||"chart")+".png";document.body.appendChild(a);a.click();a.remove();},"image/png");};img.onerror=()=>URL.revokeObjectURL(url);img.src=url;}
-function embedSnippet(){persist();const src=location.origin+location.pathname+"#"+encodeState()+"&e=1";const code='<iframe src="'+src+'" width="760" height="460" style="border:0;border-radius:16px;overflow:hidden" title="Crypto Seasonal Index" loading="lazy"></iframe>';const lbl=document.getElementById("embedBtn");const done=()=>{lbl.textContent="Copied ✓";setTimeout(()=>lbl.textContent="Embed",1600);};if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(code).then(done).catch(done);}else done();}
+function embedCode(){persist();const src=location.origin+location.pathname+"#"+encodeState()+"&e=1";return '<iframe src="'+src+'" width="760" height="460" style="border:0;border-radius:16px;overflow:hidden" title="Crypto Seasonal Index" loading="lazy"></iframe>';}
+function copyText(t,btn,label){const done=()=>{btn.textContent="Copied ✓";setTimeout(()=>{btn.textContent=label;},1600);};if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(t).then(done).catch(done);}else{done();}}
+function openShare(){persist();document.getElementById("shareUrl").value=location.href;document.getElementById("shareModal").hidden=false;const u=document.getElementById("shareUrl");u.focus();u.select();}
+function closeShare(){document.getElementById("shareModal").hidden=true;}
 function lbSeg(){const el=document.getElementById("lbSeg");const opts=[["3","3"],["5","5"],["max","Max"]];el.innerHTML="";opts.forEach(([v,lab])=>{const b=document.createElement("button");b.textContent=lab;if(lookback===v)b.className="on";b.onclick=()=>{lookback=v;for(const k in seaCache)delete seaCache[k];for(const k in metCache)delete metCache[k];redraw();};el.appendChild(b);});}
 function swatches(){const col=color(primary());document.getElementById("avgSw").style.borderBottom="2.5px solid "+col;document.getElementById("curSw").style.borderBottom="2.5px dotted "+lighten(col);}
 function togStyle(btn,on,col){if(on){btn.classList.add("on");btn.style.background=alpha(col,.14);btn.style.borderColor=alpha(col,.5);btn.style.color="#F4F7FB";}else{btn.classList.remove("on");btn.style.background="";btn.style.borderColor="";btn.style.color="";}}
@@ -446,9 +477,13 @@ function start(){COINS=M.coins;COINS.forEach((c,i)=>{sel[c]=(i===0);});
  document.getElementById("smBtn").onclick=()=>{showMatchMonth=!showMatchMonth;redraw();};
  document.getElementById("logBtn").onclick=()=>{logScale=!logScale;redraw();};
  document.getElementById("zr").onclick=resetZoom;
- document.getElementById("shareBtn").onclick=()=>{persist();const lbl=document.getElementById("shareLbl");const url=location.href;const done=()=>{lbl.textContent="Copied ✓";setTimeout(()=>{lbl.textContent="Share";},1600);};if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(url).then(done).catch(done);}else{done();}};
- document.getElementById("pngBtn").onclick=exportPNG;
- document.getElementById("embedBtn").onclick=embedSnippet;
+ document.getElementById("shareBtn").onclick=openShare;
+ document.getElementById("shareClose").onclick=closeShare;
+ document.getElementById("shareBack").onclick=closeShare;
+ document.getElementById("copyLink").onclick=e=>{const u=document.getElementById("shareUrl");u.focus();u.select();copyText(u.value,e.currentTarget,"Copy link");};
+ document.getElementById("dlPng").onclick=exportPNG;
+ document.getElementById("copyEmbed").onclick=e=>copyText(embedCode(),e.currentTarget,"</>  Copy embed code");
+ document.addEventListener("keydown",e=>{if(e.key==="Escape")closeShare();});
  document.getElementById("resetAll").onclick=()=>{res="D";lookback="max";logScale=false;showNorm=true;showCur=true;showMatch=false;showMatchMonth=false;bq="";bcat="all";bsort="cap";domF=[0,1];hoverIdx=null;COINS.forEach((c,i)=>{sel[c]=(i===0);});redraw();};
  window.addEventListener("mouseup",()=>{if(dragging){const N=ND();const a=Math.min(dragA,dragB),b=Math.max(dragA,dragB);if((b-a)/(N-1)>0.03){domF=[a/(N-1),b/(N-1)];}dragging=false;render();}});
  window.addEventListener("resize",()=>render());
