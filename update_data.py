@@ -23,7 +23,7 @@ COINS = {                  # name -> (symbol, color, source)
     "LINK": ("LINKUSDT", "#3B82F6", "binance"),
     "BCH":  ("BCHUSDT",  "#22C55E", "binance"),
     "LTC":  ("LTCUSDT",  "#94A3B8", "binance"),
-    "TON":  ("TON-USDT", "#EF4444", "okx"),
+    "GRAM": ("GRAM-USDT","#EF4444", "okx"),
     "ZEC":  ("ZECUSDT",  "#FDE047", "binance"),
     "XAU":  ("GC=F",     "#FFD24A", "yahoo"),
     "XAG":  ("SI=F",     "#D6DCE6", "yahoo"),
@@ -31,7 +31,7 @@ COINS = {                  # name -> (symbol, color, source)
 METAL_FIRST_YEAR = 1990    # don't go absurdly far back for metals
 CG = {"BTC":"bitcoin","ETH":"ethereum","BNB":"binancecoin","SOL":"solana","XRP":"ripple",
       "DOGE":"dogecoin","TRX":"tron","LINK":"chainlink","BCH":"bitcoin-cash","LTC":"litecoin",
-      "TON":"the-open-network","ZEC":"zcash"}
+      "GRAM":"the-open-network","ZEC":"zcash"}
 BINANCE = "https://data-api.binance.vision/api/v3/klines"
 BYBIT   = "https://api.bybit.com/v5/market/kline"
 OKX     = "https://www.okx.com/api/v5/market/history-candles"
