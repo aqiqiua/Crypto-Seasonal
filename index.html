@@ -112,7 +112,7 @@
  .crt{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
  .mini{padding:4px 10px;border-radius:999px;border:1px solid rgba(148,163,184,.16);background:rgba(148,163,184,.05);color:var(--text2);cursor:pointer;font:700 10px var(--mono);letter-spacing:.04em;transition:.15s}
  .mini:hover{color:var(--text);border-color:rgba(52,211,153,.4)}
- .embed .toolbar,.embed .selrow,.embed #browser,.embed .subleg,.embed .statcards,.embed .foot{display:none!important}
+ .embed .toolbar,.embed .selrow,.embed #browser,.embed .subleg,.embed .statcards,.embed #heatmap,.embed .foot{display:none!important}
  .embed .wrap{padding:14px 16px}
  .embed .chartcard{margin-top:10px}
  .embed .head{margin-bottom:4px}
@@ -133,6 +133,21 @@
  .mbtn2{flex:1;min-width:150px;padding:12px 14px;border-radius:10px;border:1px solid rgba(148,163,184,.16);background:rgba(148,163,184,.06);color:var(--text);font:700 12px var(--sans);cursor:pointer;transition:.15s}
  .mbtn2:hover{border-color:rgba(52,211,153,.4);background:rgba(52,211,153,.08)}
  .mhint{margin-top:16px;font:500 11px/1.5 var(--sans);color:rgba(148,163,184,.5)}
+ .switch{position:relative;width:40px;height:23px;border-radius:999px;background:rgba(148,163,184,.22);cursor:pointer;transition:.15s;flex:none}
+ .switch.on{background:linear-gradient(135deg,#34D399,#14B8A6)}
+ .switch .knob{position:absolute;top:2.5px;left:2.5px;width:18px;height:18px;border-radius:50%;background:#fff;transition:.15s}
+ .switch.on .knob{left:19.5px}
+ .labrow{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;padding:14px 0;border-bottom:1px solid rgba(148,163,184,.1)}
+ .labrow:last-child{border-bottom:none}
+ .labrow .lt{font:700 13px var(--sans);color:var(--text)}
+ .labrow .ld{margin-top:4px;font:500 11.5px/1.5 var(--sans);color:rgba(148,163,184,.6)}
+ .heatmap{margin-top:14px;padding:16px 18px;border-radius:20px;background:rgba(148,163,184,.05);border:1px solid rgba(148,163,184,.12);backdrop-filter:blur(14px);overflow-x:auto}
+ .heatmap .hmt{font:800 10px var(--mono);letter-spacing:.16em;color:var(--muted);margin-bottom:12px}
+ .hmgrid{display:grid;gap:3px;min-width:660px}
+ .hmcell{padding:6px 3px;border-radius:5px;text-align:center;font:600 10px var(--mono);color:var(--text2)}
+ .hmhead{color:var(--muted);font-weight:700}
+ .hmylab{text-align:left;padding-left:2px;color:var(--text);font-weight:700}
+ .hmnote{font:600 12px var(--sans);color:var(--muted)}
  #plot{position:relative;width:100%}
  #svg{width:100%;height:auto;display:block;overflow:visible;touch-action:none;cursor:crosshair}
  #tip{position:absolute;display:none;pointer-events:none;z-index:5;min-width:158px;padding:11px 13px;border-radius:14px;background:rgba(12,18,32,.86);border:1px solid rgba(148,163,184,.2);backdrop-filter:blur(10px);box-shadow:0 14px 40px rgba(0,0,0,.5)}
@@ -184,6 +199,7 @@
     <button class="ghost" id="zr"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"></path><path d="M3 3v5h5"></path></svg>Reset zoom</button>
     <button class="ghost" id="resetAll">Defaults</button>
     <button class="ghost" id="shareBtn"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><path d="M8.6 13.5l6.8 4M15.4 6.5l-6.8 4"></path></svg><span id="shareLbl">Share</span></button>
+    <button class="ghost" id="labsBtn"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3h6M10 3v6.5L5 19a1.5 1.5 0 0 0 1.4 2h11.2a1.5 1.5 0 0 0 1.4-2l-5-9.5V3"></path><path d="M7.5 15h9"></path></svg>Labs</button>
    </div>
   </div>
 
@@ -200,6 +216,7 @@
   </div>
 
   <div class="statcards" id="statcards"></div>
+  <div class="heatmap" id="heatmap" hidden></div>
 
   <div class="foot">UPDATES ONCE A DAY · UTC+3</div>
  </div>
@@ -213,6 +230,15 @@
    <div class="mlab">Image &amp; embed</div>
    <div class="mrow2"><button class="mbtn2" id="dlPng">⬇  Download PNG</button><button class="mbtn2" id="copyEmbed">&lt;/&gt;  Copy embed code</button></div>
    <div class="mhint">The link and embed carry the selected assets, timeframe, years and toggles — anyone who opens it sees the same view.</div>
+  </div>
+ </div>
+
+ <div class="modal" id="labsModal" hidden>
+  <div class="mback" id="labsBack"></div>
+  <div class="mbox">
+   <div class="mhd"><span>Experimental features</span><button class="mx" id="labsClose">✕</button></div>
+   <div id="labsList"></div>
+   <div class="mhint">Off by default. Your choices are saved on this device only and don't change the shared link.</div>
   </div>
  </div>
 </div>
@@ -424,6 +450,31 @@ function embedCode(){persist();const src=location.origin+location.pathname+"#"+e
 function copyText(t,btn,label){const done=()=>{btn.textContent="Copied ✓";setTimeout(()=>{btn.textContent=label;},1600);};if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(t).then(done).catch(done);}else{done();}}
 function openShare(){persist();document.getElementById("shareUrl").value=location.href;document.getElementById("shareModal").hidden=false;const u=document.getElementById("shareUrl");u.focus();u.select();}
 function closeShare(){document.getElementById("shareModal").hidden=true;}
+const FLAGS=[{key:"heatmap",label:"Monthly return heatmap",desc:"A year × month grid of returns for the selected asset — spot which months are usually strong or weak at a glance."}];
+let flags={};
+function loadFlags(){try{flags=JSON.parse(localStorage.getItem("si_flags"))||{};}catch(e){flags={};}FLAGS.forEach(f=>{if(typeof flags[f.key]!=="boolean")flags[f.key]=false;});}
+function saveFlags(){try{localStorage.setItem("si_flags",JSON.stringify(flags));}catch(e){}}
+function renderLabs(){const el=document.getElementById("labsList");el.innerHTML=FLAGS.map(f=>'<div class="labrow"><div><div class="lt">'+f.label+'</div><div class="ld">'+f.desc+'</div></div><div class="switch'+(flags[f.key]?" on":"")+'" data-flag="'+f.key+'"><div class="knob"></div></div></div>').join("");
+ el.querySelectorAll(".switch").forEach(s=>s.onclick=()=>{const k=s.getAttribute("data-flag");flags[k]=!flags[k];saveFlags();renderLabs();redraw();});}
+function openLabs(){renderLabs();document.getElementById("labsModal").hidden=false;}
+function closeLabs(){document.getElementById("labsModal").hidden=true;}
+function heatmap(){const el=document.getElementById("heatmap");if(!flags.heatmap){el.hidden=true;el.innerHTML="";return;}el.hidden=false;
+ const c=primary();const ys=(D[c]&&D[c].yrs)||[];
+ if(!ys.length){el.innerHTML='<div class="hmnote">No yearly history for '+c+'.</div>';return;}
+ const bnd=m=>[m===0?0:MSTART[m]-1, m<11?MSTART[m+1]-1:M.Dn-1];
+ const mret=p=>MON.map((_,m)=>{const[a,b]=bnd(m);const va=p[a],vb=p[b];return(va==null||vb==null)?null:(Math.exp((vb-va)/100)-1)*100;});
+ const cret=cur=>MON.map((_,m)=>{const[a,b]=bnd(m);const va=cur[a],vb=cur[b];return(va==null||vb==null)?null:((1+vb/100)/(1+va/100)-1)*100;});
+ const rows=ys.map(y=>({label:String(y),vals:mret(D[c].years[String(y)])}));
+ const curYear=parseInt((""+M.asof).trim().split(/\s+/).pop())||(ys[ys.length-1]+1);
+ const cm=cret(D[c].cur||[]);if(cm.some(v=>v!=null))rows.push({label:String(curYear),vals:cm,cur:true});
+ const avg=MON.map((_,m)=>{let s=0,n=0;rows.forEach(r=>{if(r.cur)return;const v=r.vals[m];if(v!=null){s+=v;n++;}});return n?s/n:null;});
+ let mx=0;rows.forEach(r=>r.vals.forEach(v=>{if(v!=null)mx=Math.max(mx,Math.abs(v));}));avg.forEach(v=>{if(v!=null)mx=Math.max(mx,Math.abs(v));});
+ const cell=v=>{if(v==null)return '<div class="hmcell" style="background:rgba(148,163,184,.05);color:rgba(148,163,184,.35)">·</div>';const t=Math.min(1,Math.abs(v)/(mx||1));const a=(0.1+t*0.82).toFixed(2);const col=v>=0?"52,211,153":"251,113,133";return '<div class="hmcell" style="background:rgba('+col+','+a+');color:'+(t>0.5?"#0b1220":"var(--text2)")+'">'+(v>=0?"+":"")+Math.round(v)+'</div>';};
+ let h='<div class="hmt">MONTHLY RETURN % · '+c+' · '+(NAMES[c]||c)+'</div><div class="hmgrid" style="grid-template-columns:52px repeat(12,1fr)">';
+ h+='<div class="hmcell hmhead"></div>'+MON.map(m=>'<div class="hmcell hmhead">'+m+'</div>').join("");
+ rows.forEach(r=>{h+='<div class="hmcell hmylab">'+r.label+'</div>'+r.vals.map(cell).join("");});
+ h+='<div class="hmcell hmylab" style="color:var(--accent-bright)">AVG</div>'+avg.map(cell).join("");
+ h+='</div>';el.innerHTML=h;}
 function lbSeg(){const el=document.getElementById("lbSeg");const opts=[["3","3"],["5","5"],["max","Max"]];el.innerHTML="";opts.forEach(([v,lab])=>{const b=document.createElement("button");b.textContent=lab;if(lookback===v)b.className="on";b.onclick=()=>{lookback=v;for(const k in seaCache)delete seaCache[k];for(const k in metCache)delete metCache[k];redraw();};el.appendChild(b);});}
 function swatches(){const col=color(primary());document.getElementById("avgSw").style.borderBottom="2.5px solid "+col;document.getElementById("curSw").style.borderBottom="2.5px dotted "+lighten(col);}
 function togStyle(btn,on,col){if(on){btn.classList.add("on");btn.style.background=alpha(col,.14);btn.style.borderColor=alpha(col,.5);btn.style.color="#F4F7FB";}else{btn.classList.remove("on");btn.style.background="";btn.style.borderColor="";btn.style.color="";}}
@@ -434,9 +485,10 @@ function toolbarState(){const col=color(primary());
  togStyle(document.getElementById("smBtn"),showMatchMonth,"#A5B4FC");
  document.getElementById("logBtn").classList.toggle("on",logScale);}
 
-function redraw(){swatches();toolbarState();selrow();browser();subleg();statcards();lbSeg();render();bindPlot();persist();}
+function redraw(){swatches();toolbarState();selrow();browser();subleg();statcards();heatmap();lbSeg();render();bindPlot();persist();}
 
 function start(){COINS=M.coins;COINS.forEach((c,i)=>{sel[c]=(i===0);});
+ loadFlags();
  try{const h=decodeURIComponent(location.hash.slice(1));const saved=localStorage.getItem("si_state")||"";if(h)applyState(h);else if(saved)applyState(saved);}catch(e){}
  if(embedMode){document.body.classList.add("embed");browserOpen=false;}
  document.getElementById("updated").textContent="Updated · "+enUpdated(M.asof);
@@ -452,7 +504,10 @@ function start(){COINS=M.coins;COINS.forEach((c,i)=>{sel[c]=(i===0);});
  document.getElementById("copyLink").onclick=e=>{const u=document.getElementById("shareUrl");u.focus();u.select();copyText(u.value,e.currentTarget,"Copy link");};
  document.getElementById("dlPng").onclick=exportPNG;
  document.getElementById("copyEmbed").onclick=e=>copyText(embedCode(),e.currentTarget,"</>  Copy embed code");
- document.addEventListener("keydown",e=>{if(e.key==="Escape")closeShare();});
+ document.getElementById("labsBtn").onclick=openLabs;
+ document.getElementById("labsClose").onclick=closeLabs;
+ document.getElementById("labsBack").onclick=closeLabs;
+ document.addEventListener("keydown",e=>{if(e.key==="Escape"){closeShare();closeLabs();}});
  document.getElementById("resetAll").onclick=()=>{res="D";lookback="max";logScale=false;showNorm=true;showCur=true;showMatch=false;showMatchMonth=false;bq="";bcat="all";bsort="cap";domF=[0,1];hoverIdx=null;COINS.forEach((c,i)=>{sel[c]=(i===0);});redraw();};
  window.addEventListener("mouseup",()=>{if(dragging){const N=ND();const a=Math.min(dragA,dragB),b=Math.max(dragA,dragB);if((b-a)/(N-1)>0.03){domF=[a/(N-1),b/(N-1)];}dragging=false;render();}});
  window.addEventListener("resize",()=>render());
