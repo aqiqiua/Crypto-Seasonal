@@ -112,18 +112,7 @@
  .crt{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
  .mini{padding:4px 10px;border-radius:999px;border:1px solid rgba(148,163,184,.16);background:rgba(148,163,184,.05);color:var(--text2);cursor:pointer;font:700 10px var(--mono);letter-spacing:.04em;transition:.15s}
  .mini:hover{color:var(--text);border-color:rgba(52,211,153,.4)}
- .micro{margin-top:14px;display:grid;grid-template-columns:1fr 1.6fr;gap:14px}
- @media(max-width:760px){.micro{grid-template-columns:1fr}}
- .mcard{padding:16px 18px;border-radius:20px;background:rgba(148,163,184,.05);border:1px solid rgba(148,163,184,.12);backdrop-filter:blur(14px)}
- .mcard .lbl{font:800 9.5px var(--mono);letter-spacing:.16em;color:var(--muted)}
- .mcard .mnote{margin-top:10px;font:600 11px var(--mono);color:rgba(148,163,184,.5)}
- .bars{margin-top:14px;display:flex;align-items:stretch;gap:4px;height:96px}
- .bar{flex:1;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;gap:4px;min-width:0}
- .bar .bwrap{width:100%;flex:1;display:flex;flex-direction:column;justify-content:center;position:relative}
- .bar .bfill{width:70%;margin:0 auto;border-radius:3px}
- .bar .blab{font:600 8.5px var(--mono);color:rgba(148,163,184,.5);white-space:nowrap}
- .bar .bval{font:700 8px var(--mono);white-space:nowrap}
- .embed .toolbar,.embed .selrow,.embed #browser,.embed .subleg,.embed .statcards,.embed #micro,.embed .foot,.embed .mini{display:none!important}
+ .embed .toolbar,.embed .selrow,.embed #browser,.embed .subleg,.embed .statcards,.embed .foot{display:none!important}
  .embed .wrap{padding:14px 16px}
  .embed .chartcard{margin-top:10px}
  .embed .head{margin-bottom:4px}
@@ -212,7 +201,6 @@
   </div>
 
   <div class="statcards" id="statcards"></div>
-  <div class="micro" id="micro"></div>
 
   <div class="foot">UPDATES ONCE A DAY · UTC+3</div>
  </div>
@@ -429,21 +417,6 @@ function applyState(q){const p={};q.split("&").forEach(kv=>{const i=kv.indexOf("
  if(p.log!=null)logScale=p.log==="1";
  if(p.z){const m=p.z.split("-");if(m.length===2){const f0=parseFloat(m[0]),f1=parseFloat(m[1]);if(f0>=0&&f1<=1&&f1>f0){domF=[f0,f1];}}}
  if(p.e==="1")embedMode=true;}
-const DOW=["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
-function barsSVG(vals,labels,labelEvery){const n=vals.length,W=520,H=124,padX=6,top=16,bot=100,z=(top+bot)/2,half=(bot-top)/2;
- let m=0;vals.forEach(v=>{if(v!=null&&Math.abs(v)>m)m=Math.abs(v);});if(m<0.05)m=0.05;
- const step=(W-2*padX)/n,bw=Math.max(3,step*0.66);
- let s='<svg viewBox="0 0 '+W+' '+H+'" style="width:100%;height:auto;display:block;margin-top:10px" xmlns="http://www.w3.org/2000/svg">';
- s+='<line x1="'+padX+'" x2="'+(W-padX)+'" y1="'+z+'" y2="'+z+'" stroke="rgba(148,163,184,.18)"/>';
- vals.forEach((v,i)=>{const cx=padX+i*step+step/2;
-   if(v!=null){const bh=Math.min(half,Math.abs(v)/m*half);const y=v>=0?z-bh:z;const col=v>=0?"#34D399":"#FB7185";
-     s+='<rect x="'+(cx-bw/2).toFixed(1)+'" y="'+y.toFixed(1)+'" width="'+bw.toFixed(1)+'" height="'+Math.max(1,bh).toFixed(1)+'" rx="2" fill="'+col+'" opacity="0.9"/>';}
-   if(i%labelEvery===0)s+='<text x="'+cx.toFixed(1)+'" y="'+(H-3)+'" text-anchor="middle" fill="rgba(148,163,184,.5)" font-size="8.5" font-family="\'JetBrains Mono\',monospace">'+labels[i]+'</text>';});
- s+='</svg>';return s;}
-function micro(){const el=document.getElementById("micro");if(!el)return;const c=primary();const dow=D[c]&&D[c].dow,hod=D[c]&&D[c].hod;
- let h='<div class="mcard"><div class="lbl">AVG RETURN · WEEKDAY · '+c+'</div>'+((dow&&dow.some(v=>v!=null))?barsSVG(dow,DOW,1):'<div class="mnote">not enough data</div>')+'</div>';
- h+='<div class="mcard"><div class="lbl">AVG RETURN · HOUR OF DAY (UTC+3) · '+c+'</div>'+((hod&&hod.some(v=>v!=null))?barsSVG(hod,Array.from({length:24},(_,i)=>i),3):'<div class="mnote">intraday pattern computes overnight · crypto only</div>')+'</div>';
- el.innerHTML=h;}
 function exportPNG(){const svg=document.getElementById("svg");if(!svg)return;const NS="http://www.w3.org/2000/svg";const clone=svg.cloneNode(true);
  const bg=document.createElementNS(NS,"rect");bg.setAttribute("x",0);bg.setAttribute("y",0);bg.setAttribute("width",VW);bg.setAttribute("height",VH);bg.setAttribute("fill","#080D1A");clone.insertBefore(bg,clone.firstChild);
  const t=document.createElementNS(NS,"text");t.setAttribute("x",VW-8);t.setAttribute("y",VH-6);t.setAttribute("text-anchor","end");t.setAttribute("fill","rgba(148,163,184,.5)");t.setAttribute("font-size","10");t.setAttribute("font-family","monospace");t.textContent="aqiqiua.github.io/Crypto-Seasonal · "+(selCoins().join(" · ")||"");clone.appendChild(t);
@@ -464,7 +437,7 @@ function toolbarState(){const col=color(primary());
  togStyle(document.getElementById("smBtn"),showMatchMonth,"#A5B4FC");
  document.getElementById("logBtn").classList.toggle("on",logScale);}
 
-function redraw(){swatches();toolbarState();selrow();browser();subleg();statcards();micro();lbSeg();render();bindPlot();persist();}
+function redraw(){swatches();toolbarState();selrow();browser();subleg();statcards();lbSeg();render();bindPlot();persist();}
 function setRes(r){if(res===r)return;res=r;domF=[0,1];hoverIdx=null;redraw();}
 
 function start(){COINS=M.coins;COINS.forEach((c,i)=>{sel[c]=(i===0);});
