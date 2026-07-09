@@ -67,6 +67,7 @@ STOOQ   = "https://stooq.com/q/d/l/"
 YF      = "https://query1.finance.yahoo.com/v8/finance/chart/"
 UA = {"User-Agent": "Mozilla/5.0 (seasonal-index-bot)"}
 HRS, DAYS = 365 * 24, 365
+MIN_YEARS = 3          # drop assets without at least this many complete years
 CRYPTO = {"binance", "okx", "bybit"}
 
 def ms(d): return int(d.replace(tzinfo=dt.timezone.utc).timestamp() * 1000)
@@ -214,6 +215,22 @@ def build_hourly(rows, this_year):
     cv = [None if (cur is None or grid[i] > fmax) else round(float(cur[i]), 2) for i in range(HRS)]
     return [round(float(v), 2) for v in idx0], cv
 
+def _ret_by(rows, freq, buckets, keyfn):
+    """avg % return per bucket (freq='D' weekday / 'h' hour), pooled over all history."""
+    if not rows: return None
+    df = pd.DataFrame(rows, columns=["t", "close"]).drop_duplicates("t")
+    df["loc"] = pd.to_datetime(df["t"], unit="ms", utc=True).dt.tz_localize(None) + pd.Timedelta(hours=TZ)
+    s = df.set_index("loc").sort_index()["close"].resample(freq).last()
+    s = s[s > 0]                                   # drop gaps (weekends) & non-positive (WTI 2020)
+    if len(s) < 30: return None
+    ret = s.pct_change().dropna() * 100
+    ret = ret[ret.abs() < 60]                      # clip absurd single-print spikes
+    by = ret.groupby(keyfn(ret.index)).mean()
+    return [round(float(by[i]), 4) if i in by.index else None for i in range(buckets)]
+
+def dow_returns(rows):  return _ret_by(rows, "D", 7,  lambda idx: idx.dayofweek)   # 0=Mon..6=Sun
+def hod_returns(rows):  return _ret_by(rows, "h", 24, lambda idx: idx.hour)        # 0..23 (UTC+3)
+
 def market_cap_order(names):
     """-> (order sorted by live market cap, {coin: market_cap_usd})"""
     cryptos = [n for n in names if n in CG]
@@ -249,15 +266,17 @@ def main():
                 for y in range(FIRST_YEAR, this_year + 1):
                     rows += fetch_binance(fb, dt.datetime(y, 1, 1), dt.datetime(y + 1, 1, 1, 3))
         years, cur, yrs = daily_years(rows, this_year, fy)
-        sea_h = cur_h = None
+        if len(yrs) < MIN_YEARS:
+            print(f"{name} [{src}]: {len(yrs)}-Yr < {MIN_YEARS}, skipped"); continue
+        sea_h = cur_h = hod = None
         if src in CRYPTO and rows:
             sea_h, cur_h = build_hourly(rows, this_year)
+            hod = hod_returns(rows)
         out[name] = {"color": color, "yrs": yrs, "years": {str(y): years[y] for y in yrs},
                      "cur": cur, "sea_h": sea_h, "cur_h": cur_h, "daily": src == "stooq",
-                     "metal": src in ("yahoo", "stooq")}
-        span = f"{yrs[0]}-{yrs[-1]} ({len(yrs)}-Yr)" if yrs else "n/a"
-        print(f"{name} [{src}]: {span}  rows={len(rows)}")
-    order, caps = market_cap_order(list(COINS))
+                     "metal": src in ("yahoo", "stooq"), "dow": dow_returns(rows), "hod": hod}
+        print(f"{name} [{src}]: {yrs[0]}-{yrs[-1]} ({len(yrs)}-Yr)  rows={len(rows)}")
+    order, caps = market_cap_order([n for n in COINS if n in out])
     for name in out:
         out[name]["mcap"] = caps.get(name, 0)
     yr0 = dt.datetime(this_year, 1, 1); yr1 = dt.datetime(this_year, 12, 31, 23)
