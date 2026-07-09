@@ -45,6 +45,12 @@ COINS = {                  # name -> (symbol, color, source)   [top-50 by market
     "HTX":  ("HTXUSDT",  "#7B9CF0", "bybit"),
     "XAU":  ("GC=F",     "#FFD24A", "yahoo"),
     "XAG":  ("SI=F",     "#D6DCE6", "yahoo"),
+    "XPT":  ("PL=F",     "#D9DCE1", "yahoo"),
+    "DXY":  ("DX-Y.NYB", "#22D3EE", "yahoo"),
+    "SPX":  ("^GSPC",    "#CBD5E1", "yahoo"),
+    "NDX":  ("^NDX",     "#A78BFA", "yahoo"),
+    "WTI":  ("CL=F",     "#F97316", "yahoo"),
+    "HG":   ("HG=F",     "#D08B5A", "yahoo"),
 }
 METAL_FIRST_YEAR = 1990    # don't go absurdly far back for metals
 CG = {"BTC":"bitcoin","ETH":"ethereum","BNB":"binancecoin","XRP":"ripple","SOL":"solana",
@@ -175,9 +181,10 @@ def daily_years(rows, this_year, first_year):
         base = g.iloc[0]
         x = (g.index - yr0).total_seconds().values / span
         if y == this_year:
-            cv = np.interp(grid, x, ((g.values / base) - 1) * 100)
-            cur = [None if grid[i] > x[-1] else round(float(cv[i]), 3) for i in range(DAYS)]
-        elif x[0] <= 0.03 and x[-1] >= 0.97:
+            if base > 0:
+                cv = np.interp(grid, x, ((g.values / base) - 1) * 100)
+                cur = [None if grid[i] > x[-1] else round(float(cv[i]), 3) for i in range(DAYS)]
+        elif x[0] <= 0.03 and x[-1] >= 0.97 and base > 0 and (g.values > 0).all():
             cl = np.interp(grid, x, (np.log(g.values) - np.log(base)) * 100)
             years[y] = [round(float(v), 3) for v in cl]
     return years, cur, sorted(years)

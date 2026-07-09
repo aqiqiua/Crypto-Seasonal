@@ -77,6 +77,11 @@
  .cat .cc{font:700 9px var(--mono);color:rgba(148,163,184,.5)}
  .cat.on{background:rgba(52,211,153,.16);border-color:rgba(52,211,153,.4)}
  .cat.on .cl{color:var(--accent-bright)}.cat.on .cc{color:var(--accent-bright)}
+ .sortrow{margin-top:10px;display:flex;flex-wrap:wrap;align-items:center;gap:6px}
+ .srtlbl{font:700 9px var(--mono);letter-spacing:.14em;color:var(--muted);margin-right:2px}
+ .sortb{padding:5px 10px;border-radius:999px;border:1px solid rgba(148,163,184,.13);background:rgba(148,163,184,.05);color:var(--text2);cursor:pointer;font:600 10.5px var(--sans);transition:.15s}
+ .sortb:hover{color:var(--text)}
+ .sortb.on{background:rgba(52,211,153,.16);border-color:rgba(52,211,153,.4);color:var(--accent-bright)}
  .grid{margin-top:12px;max-height:300px;overflow-y:auto;display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:8px}
  .tile{padding:11px 12px;border-radius:13px;cursor:pointer;transition:.15s;background:rgba(148,163,184,.05);border:1px solid rgba(148,163,184,.12);text-align:left}
  .tile:hover{background:rgba(148,163,184,.09)}
@@ -178,10 +183,10 @@
 </div>
 <script>
 let D,M,COINS;
-const PAL={BTC:"#FB7E14",ETH:"#818CF8",BNB:"#A3E635",SOL:"#A855F7",XRP:"#06B6D4",DOGE:"#EC4899",TRX:"#FB7185",LINK:"#3B82F6",BCH:"#22C55E",LTC:"#94A3B8",ZEC:"#FDE047",GRAM:"#3AA9E6",XAU:"#FFD24A",XAG:"#D6DCE6",HYPE:"#2DE1C2",LEO:"#6FCF97",ADA:"#4F9BFF",XLM:"#9AA7C7",HBAR:"#14B8A6",SUI:"#38BDF8",AVAX:"#FF5A5F",CRO:"#2E5BFF",SHIB:"#FF9F45",NEAR:"#00D9A3",UNI:"#FF6FB5",TAO:"#34D399",WLFI:"#D4A373",ASTER:"#B794F6",OKB:"#1FA2FF",ONDO:"#6C8CFF",DOT:"#E6007A",HTX:"#7B9CF0"};
-const NAMES={BTC:"Bitcoin",ETH:"Ethereum",BNB:"BNB",XRP:"XRP",SOL:"Solana",TRX:"TRON",HYPE:"Hyperliquid",DOGE:"Dogecoin",LEO:"UNUS SED LEO",ZEC:"Zcash",ADA:"Cardano",XLM:"Stellar",LINK:"Chainlink",BCH:"Bitcoin Cash",GRAM:"Toncoin",LTC:"Litecoin",HBAR:"Hedera",SUI:"Sui",AVAX:"Avalanche",CRO:"Cronos",SHIB:"Shiba Inu",NEAR:"NEAR Protocol",UNI:"Uniswap",TAO:"Bittensor",WLFI:"World Liberty Fi",ASTER:"Aster",OKB:"OKB",ONDO:"Ondo",DOT:"Polkadot",HTX:"HTX",XAU:"Gold",XAG:"Silver"};
-const CAT={BTC:"l1",ETH:"l1",BNB:"l1",XRP:"pay",SOL:"l1",TRX:"l1",HYPE:"defi",DOGE:"meme",LEO:"cex",ZEC:"priv",ADA:"l1",XLM:"pay",LINK:"defi",BCH:"pay",GRAM:"l1",LTC:"pay",HBAR:"l1",SUI:"l1",AVAX:"l1",CRO:"cex",SHIB:"meme",NEAR:"l1",UNI:"defi",TAO:"l1",WLFI:"defi",ASTER:"defi",OKB:"cex",ONDO:"defi",DOT:"l1",HTX:"cex",XAU:"metal",XAG:"metal"};
-const CATLABELS=[["all","All"],["l1","Layer 1"],["defi","DeFi"],["meme","Meme"],["cex","Exchange"],["pay","Payments"],["priv","Privacy"],["metal","Metals"]];
+const PAL={BTC:"#FB7E14",ETH:"#818CF8",BNB:"#A3E635",SOL:"#A855F7",XRP:"#06B6D4",DOGE:"#EC4899",TRX:"#FB7185",LINK:"#3B82F6",BCH:"#22C55E",LTC:"#94A3B8",ZEC:"#FDE047",GRAM:"#3AA9E6",XAU:"#FFD24A",XAG:"#D6DCE6",HYPE:"#2DE1C2",LEO:"#6FCF97",ADA:"#4F9BFF",XLM:"#9AA7C7",HBAR:"#14B8A6",SUI:"#38BDF8",AVAX:"#FF5A5F",CRO:"#2E5BFF",SHIB:"#FF9F45",NEAR:"#00D9A3",UNI:"#FF6FB5",TAO:"#34D399",WLFI:"#D4A373",ASTER:"#B794F6",OKB:"#1FA2FF",ONDO:"#6C8CFF",DOT:"#E6007A",HTX:"#7B9CF0",XPT:"#D9DCE1",DXY:"#22D3EE",SPX:"#CBD5E1",NDX:"#A78BFA",WTI:"#F97316",HG:"#D08B5A"};
+const NAMES={BTC:"Bitcoin",ETH:"Ethereum",BNB:"BNB",XRP:"XRP",SOL:"Solana",TRX:"TRON",HYPE:"Hyperliquid",DOGE:"Dogecoin",LEO:"UNUS SED LEO",ZEC:"Zcash",ADA:"Cardano",XLM:"Stellar",LINK:"Chainlink",BCH:"Bitcoin Cash",GRAM:"Toncoin",LTC:"Litecoin",HBAR:"Hedera",SUI:"Sui",AVAX:"Avalanche",CRO:"Cronos",SHIB:"Shiba Inu",NEAR:"NEAR Protocol",UNI:"Uniswap",TAO:"Bittensor",WLFI:"World Liberty Fi",ASTER:"Aster",OKB:"OKB",ONDO:"Ondo",DOT:"Polkadot",HTX:"HTX",XAU:"Gold",XAG:"Silver",XPT:"Platinum",DXY:"US Dollar Index",SPX:"S&P 500",NDX:"Nasdaq 100",WTI:"Crude Oil",HG:"Copper"};
+const CAT={BTC:"l1",ETH:"l1",BNB:"l1",XRP:"pay",SOL:"l1",TRX:"l1",HYPE:"defi",DOGE:"meme",LEO:"cex",ZEC:"priv",ADA:"l1",XLM:"pay",LINK:"defi",BCH:"pay",GRAM:"l1",LTC:"pay",HBAR:"l1",SUI:"l1",AVAX:"l1",CRO:"cex",SHIB:"meme",NEAR:"l1",UNI:"defi",TAO:"l1",WLFI:"defi",ASTER:"defi",OKB:"cex",ONDO:"defi",DOT:"l1",HTX:"cex",XAU:"metal",XAG:"metal",XPT:"metal",DXY:"macro",SPX:"macro",NDX:"macro",WTI:"macro",HG:"macro"};
+const CATLABELS=[["all","All"],["l1","Layer 1"],["defi","DeFi"],["meme","Meme"],["cex","Exchange"],["pay","Payments"],["priv","Privacy"],["metal","Metals"],["macro","Macro"]];
 const color=c=>PAL[c]||(D[c]&&D[c].color)||"#888";
 function hex2rgb(h){h=(h||"#888").replace("#","");if(h.length===3)h=h.split("").map(x=>x+x).join("");return{r:parseInt(h.slice(0,2),16),g:parseInt(h.slice(2,4),16),b:parseInt(h.slice(4,6),16)};}
 function alpha(h,a){const c=hex2rgb(h);return"rgba("+c.r+","+c.g+","+c.b+","+a+")";}
@@ -200,8 +205,8 @@ const PERDAY=()=>res==="H"?24:1;
 let domF=[0,1];
 let hoverIdx=null, dragA=null, dragB=null, dragging=false;
 let showNorm=true, showCur=true, showMatch=false, showMatchMonth=false, lookback="max", logScale=false;
-let browserOpen=true, bq="", bcat="all";
-const sel={}, seaCache={}, matchCache={};
+let browserOpen=true, bq="", bcat="all", bsort="cap";
+const sel={}, seaCache={}, matchCache={}, metCache={};
 
 const VW=1060,VH=470,padL=46,padR=58,padT=28,padB=40;
 const plotW=VW-padL-padR, plotH=VH-padT-padB, plotLeft=padL, plotTop=padT, plotBottom=padT+plotH, plotRight=padL+plotW;
@@ -299,23 +304,42 @@ function selrow(){const el=document.getElementById("selrow");el.innerHTML="";
    chip.innerHTML='<span class="dot" style="background:'+color(c)+'"></span>'+c+' <span class="yr">'+years(c)+'y</span>'+d+' <span class="x">✕</span>';
    chip.onclick=()=>{sel[c]=false;redraw();};el.appendChild(chip);});}
 
+function screenMetrics(c){const k=c+"|"+lookback;if(metCache[k])return metCache[k];
+ const sd=seasonal(c);const today=M.today_d;
+ if(!sd||!sd.avg){return metCache[k]={strength:null,next30:null,rest:null,div:null};}
+ const avgRet=i=>(Math.exp(sd.avg[Math.max(0,Math.min(M.Dn-1,i))]/100)-1)*100;
+ const ys=D[c].yrs||[];const cs=[];ys.forEach(y=>{const r=corrW(D[c].years[String(y)],sd.avg,0,M.Dn-1);if(r!=null)cs.push(r);});
+ const strength=(ys.length>=3&&cs.length)?Math.max(0,Math.min(1,cs.reduce((a,b)=>a+b,0)/cs.length)):null;
+ const next30=avgRet(Math.min(M.Dn-1,today+30))-avgRet(today);
+ const rest=avgRet(M.Dn-1)-avgRet(today);
+ const L=lastIdx(c);const div=(L>=0&&D[c].cur[L]!=null)?(D[c].cur[L]-avgRet(Math.min(L,M.Dn-1))):null;
+ return metCache[k]={strength,next30,rest,div};}
+const SORTS=[["cap","Market cap"],["str","Strength"],["n30","Next 30d"],["rest","To year-end"],["div","Divergence"]];
+function metricVal(c,mode){const m=screenMetrics(c);if(mode==="str")return m.strength;if(mode==="n30")return m.next30;if(mode==="rest")return m.rest;if(mode==="div")return m.div;return (D[c]&&D[c].mcap)||0;}
+function metricTxt(c,mode){if(mode==="cap"){const dv=deltaOf(c);return dv!=null?{t:(dv>=0?"+":"")+dv.toFixed(0)+"%",col:dv>=0?"#34D399":"#FB7185"}:{t:fmtCap(D[c]&&D[c].mcap),col:"rgba(148,163,184,.5)"};}
+ const v=metricVal(c,mode);if(v==null)return{t:"—",col:"rgba(148,163,184,.4)"};
+ if(mode==="str")return{t:Math.round(v*100)+"%",col:v>=0.6?"#34D399":v>=0.3?"#E2E8F0":"rgba(148,163,184,.6)"};
+ return{t:(v>=0?"+":"")+v.toFixed(0)+"%",col:v>=0?"#34D399":"#FB7185"};}
 function browser(){const el=document.getElementById("browser");if(!browserOpen){el.hidden=true;el.innerHTML="";return;}el.hidden=false;
  const q=bq.trim().toUpperCase();
  const counts={};COINS.forEach(c=>{const k=CAT[c]||"other";counts[k]=(counts[k]||0)+1;});
  let cats='';CATLABELS.forEach(([k,lab])=>{const n=k==="all"?COINS.length:(counts[k]||0);if(k!=="all"&&!n)return;cats+='<button class="cat'+(bcat===k?" on":"")+'" data-cat="'+k+'"><span class="cl">'+lab+'</span><span class="cc">'+n+'</span></button>';});
  let list=COINS.filter(c=>(bcat==="all"||CAT[c]===bcat)&&(!q||c.includes(q)||(NAMES[c]||"").toUpperCase().includes(q)));
- list.sort((a,b)=>((D[b]&&D[b].mcap)||0)-((D[a]&&D[a].mcap)||0));
- let grid="";list.forEach(c=>{const on=!!sel[c];const dv=deltaOf(c);const dtxt=dv!=null?((dv>=0?"+":"")+dv.toFixed(0)+"%"):("· "+fmtCap(D[c]&&D[c].mcap));const dcol=dv!=null?(dv>=0?"#34D399":"#FB7185"):"rgba(148,163,184,.5)";
-   grid+='<button class="tile'+(on?" on":"")+'" data-c="'+c+'" style="'+(on?"background:"+alpha(color(c),.14)+";border-color:"+alpha(color(c),.5):"")+'"><div class="top"><span class="lft"><span class="dot" style="background:'+color(c)+'"></span><span class="k">'+c+'</span></span><span class="d" style="color:'+dcol+'">'+dtxt+'</span></div><div class="sub">'+(NAMES[c]||c)+' · '+years(c)+'y</div></button>';});
+ list.sort((a,b)=>{const va=metricVal(a,bsort),vb=metricVal(b,bsort);const na=va==null,nb=vb==null;if(na&&nb)return 0;if(na)return 1;if(nb)return -1;return bsort==="div"?(va-vb):(vb-va);});
+ let grid="";list.forEach(c=>{const on=!!sel[c];const mt=metricTxt(c,bsort);
+   grid+='<button class="tile'+(on?" on":"")+'" data-c="'+c+'" style="'+(on?"background:"+alpha(color(c),.14)+";border-color:"+alpha(color(c),.5):"")+'"><div class="top"><span class="lft"><span class="dot" style="background:'+color(c)+'"></span><span class="k">'+c+'</span></span><span class="d" style="color:'+mt.col+'">'+mt.t+'</span></div><div class="sub">'+(NAMES[c]||c)+' · '+years(c)+'y</div></button>';});
  if(!list.length)grid='<div class="empty">No assets match your search.</div>';
+ let sorts='';SORTS.forEach(([k,lab])=>{sorts+='<button class="sortb'+(bsort===k?" on":"")+'" data-sort="'+k+'">'+lab+'</button>';});
  el.innerHTML='<div class="bhead"><span class="t">ASSETS</span><span class="tot">'+COINS.length+' TOTAL</span></div>'
   +'<div class="search"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#64748B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"></circle><path d="M21 21l-4.3-4.3"></path></svg><input id="bsearch" placeholder="Search name or ticker" autocomplete="off" value="'+bq.replace(/"/g,"")+'">'+(bq?'<span class="clr" id="bclr">✕</span>':'')+'</div>'
   +'<div class="cats">'+cats+'</div>'
+  +'<div class="sortrow"><span class="srtlbl">SORT</span>'+sorts+'</div>'
   +'<div class="grid">'+grid+'</div>'
-  +'<div class="bfoot"><span>SHOWING '+list.length+' / '+COINS.length+'</span><span>'+selCoins().length+' SELECTED</span></div>';
+  +'<div class="bfoot"><span>SHOWING '+list.length+' / '+COINS.length+'</span><span>'+(bsort==="cap"?(selCoins().length+" SELECTED"):("SCREENER · "+SORTS.find(x=>x[0]===bsort)[1].toUpperCase()))+'</span></div>';
  const si=document.getElementById("bsearch");si.oninput=e=>{bq=e.target.value;browser();const n=document.getElementById("bsearch");n.focus();n.setSelectionRange(n.value.length,n.value.length);};
  const clr=document.getElementById("bclr");if(clr)clr.onclick=()=>{bq="";redraw();};
  el.querySelectorAll(".cat").forEach(b=>b.onclick=()=>{bcat=b.getAttribute("data-cat");browser();});
+ el.querySelectorAll(".sortb").forEach(b=>b.onclick=()=>{bsort=b.getAttribute("data-sort");browser();});
  el.querySelectorAll(".tile").forEach(b=>b.onclick=()=>{const c=b.getAttribute("data-c");sel[c]=!sel[c];redraw();});}
 
 function subleg(){const el=document.getElementById("subleg");el.innerHTML="";
@@ -335,15 +359,14 @@ function subleg(){const el=document.getElementById("subleg");el.innerHTML="";
 function statcards(){const el=document.getElementById("statcards");const c=primary();const sd=seasonal(c);
  if(!sd||!sd.avg){el.innerHTML='<div class="scnote">Not enough history for '+c+' — seasonality needs at least one full year.</div>';return;}
  const avgRet=i=>(Math.exp(sd.avg[Math.max(0,Math.min(M.Dn-1,i))]/100)-1)*100;
- const ys=D[c].yrs||[];const cs=[];ys.forEach(y=>{const r=corrW(D[c].years[String(y)],sd.avg,0,M.Dn-1);if(r!=null)cs.push(r);});
- const strength=cs.length?Math.max(0,Math.min(100,Math.round(cs.reduce((a,b)=>a+b,0)/cs.length*100))):0;
+ const sm=screenMetrics(c);const strength=sm.strength!=null?Math.round(sm.strength*100):null;
  const L=lastIdx(c);const nowDev=(L>=0&&D[c].cur[L]!=null)?(D[c].cur[L]-avgRet(Math.min(L,M.Dn-1))):null;
  let best={m:0,r:-1e9},worst={m:0,r:1e9};for(let m=0;m<12;m++){const a=MSTART[m],b=(m<11?MSTART[m+1]-1:M.Dn-1);const r=avgRet(b)-avgRet(a);if(r>best.r)best={m,r};if(r<worst.r)worst={m,r};}
  const mm=matches(c);const P=v=>v==null?"—":Math.round(v*100)+"%";
- const circ=2*Math.PI*22;const off=(circ*(1-strength/100)).toFixed(1);
+ const circ=2*Math.PI*22;const off=(circ*(1-(strength==null?0:strength)/100)).toFixed(1);const strTxt=strength==null?"n/a":strength+"%";const strDesc=strength==null?"Needs 3+ complete years for a strength read.":("How closely "+c+" tracks its multi-year seasonal path.");
  const ndCol=nowDev==null?"var(--text)":(nowDev>=0?"#34D399":"#FB7185");const ndTxt=nowDev==null?"—":((nowDev>=0?"+":"")+nowDev.toFixed(1)+"%");
  el.innerHTML=
-  '<div class="scard"><div class="lbl">SEASONALITY STRENGTH</div><div style="margin-top:12px;display:flex;align-items:center;gap:15px"><div class="ring"><svg width="76" height="76" viewBox="0 0 60 60" style="transform:rotate(-90deg)"><defs><linearGradient id="ringg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#34D399"/><stop offset="1" stop-color="#14B8A6"/></linearGradient></defs><circle cx="30" cy="30" r="22" fill="none" stroke="rgba(148,163,184,.15)" stroke-width="6"/><circle cx="30" cy="30" r="22" fill="none" stroke="url(#ringg)" stroke-width="6" stroke-linecap="round" stroke-dasharray="'+circ.toFixed(1)+'" stroke-dashoffset="'+off+'"/></svg><div class="rc">'+strength+'%</div></div><div class="desc">How closely '+c+' tracks its multi-year seasonal path.</div></div></div>'
+  '<div class="scard"><div class="lbl">SEASONALITY STRENGTH</div><div style="margin-top:12px;display:flex;align-items:center;gap:15px"><div class="ring"><svg width="76" height="76" viewBox="0 0 60 60" style="transform:rotate(-90deg)"><defs><linearGradient id="ringg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#34D399"/><stop offset="1" stop-color="#14B8A6"/></linearGradient></defs><circle cx="30" cy="30" r="22" fill="none" stroke="rgba(148,163,184,.15)" stroke-width="6"/><circle cx="30" cy="30" r="22" fill="none" stroke="url(#ringg)" stroke-width="6" stroke-linecap="round" stroke-dasharray="'+circ.toFixed(1)+'" stroke-dashoffset="'+off+'"/></svg><div class="rc" style="font-size:'+(strength==null?"13":"16")+'px">'+strTxt+'</div></div><div class="desc">'+strDesc+'</div></div></div>'
   +'<div class="scard"><div class="lbl">NOW VS SEASONAL</div><div class="big" style="color:'+ndCol+'">'+ndTxt+'</div><div class="desc" style="margin-top:4px">'+c+(nowDev==null?" has no current-year reading yet.":(nowDev>=0?" is running above its seasonal norm right now.":" is tracking below where its seasonal norm suggests."))+'</div></div>'
   +'<div class="scard"><div class="lbl">TYPICALLY BEST / WORST</div><div style="margin-top:12px"><div class="scrow"><span class="l"><span class="rdot" style="background:#34D399"></span>'+MON3[best.m]+'</span><span class="v" style="color:#34D399">'+(best.r>=0?"+":"")+best.r.toFixed(0)+'%</span></div><div class="scsep"></div><div class="scrow"><span class="l"><span class="rdot" style="background:#FB7185"></span>'+MON3[worst.m]+'</span><span class="v" style="color:#FB7185">'+(worst.r>=0?"+":"")+worst.r.toFixed(0)+'%</span></div></div></div>'
   +'<div class="scard"><div class="lbl">CLOSEST ANALOG</div><div style="margin-top:12px"><div class="scrow"><span class="l">Year</span><span class="v" style="color:#E2E8F0">'+(mm&&mm.year?mm.year.year+' <span style="color:#2DD4BF">'+P(mm.year.r)+'</span>':"—")+'</span></div><div class="scsep"></div><div class="scrow"><span class="l">Month</span><span class="v" style="color:#E2E8F0">'+(mm&&mm.month?MON3[curMonth()-1]+' '+mm.month.year+' <span style="color:#A5B4FC">'+P(mm.month.r)+'</span>':"—")+'</span></div></div></div>';
@@ -357,7 +380,7 @@ function applyState(q){const p={};q.split("&").forEach(kv=>{const i=kv.indexOf("
  if(p.sh&&p.sh.length===4){showNorm=p.sh[0]==="1";showCur=p.sh[1]==="1";showMatch=p.sh[2]==="1";showMatchMonth=p.sh[3]==="1";}
  if(p.log!=null)logScale=p.log==="1";
  if(p.z){const m=p.z.split("-");if(m.length===2){const f0=parseFloat(m[0]),f1=parseFloat(m[1]);if(f0>=0&&f1<=1&&f1>f0){domF=[f0,f1];}}}}
-function lbSeg(){const el=document.getElementById("lbSeg");const opts=[["3","3"],["5","5"],["max","Max"]];el.innerHTML="";opts.forEach(([v,lab])=>{const b=document.createElement("button");b.textContent=lab;if(lookback===v)b.className="on";b.onclick=()=>{lookback=v;for(const k in seaCache)delete seaCache[k];redraw();};el.appendChild(b);});}
+function lbSeg(){const el=document.getElementById("lbSeg");const opts=[["3","3"],["5","5"],["max","Max"]];el.innerHTML="";opts.forEach(([v,lab])=>{const b=document.createElement("button");b.textContent=lab;if(lookback===v)b.className="on";b.onclick=()=>{lookback=v;for(const k in seaCache)delete seaCache[k];for(const k in metCache)delete metCache[k];redraw();};el.appendChild(b);});}
 function swatches(){const col=color(primary());document.getElementById("avgSw").style.borderBottom="2.5px solid "+col;document.getElementById("curSw").style.borderBottom="2.5px dotted "+lighten(col);}
 function togStyle(btn,on,col){if(on){btn.classList.add("on");btn.style.background=alpha(col,.14);btn.style.borderColor=alpha(col,.5);btn.style.color="#F4F7FB";}else{btn.classList.remove("on");btn.style.background="";btn.style.borderColor="";btn.style.color="";}}
 function toolbarState(){const col=color(primary());
@@ -382,7 +405,7 @@ function start(){COINS=M.coins;COINS.forEach((c,i)=>{sel[c]=(i===0);});
  document.getElementById("logBtn").onclick=()=>{logScale=!logScale;redraw();};
  document.getElementById("zr").onclick=resetZoom;
  document.getElementById("shareBtn").onclick=()=>{persist();const lbl=document.getElementById("shareLbl");const url=location.href;const done=()=>{lbl.textContent="Copied ✓";setTimeout(()=>{lbl.textContent="Share";},1600);};if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(url).then(done).catch(done);}else{done();}};
- document.getElementById("resetAll").onclick=()=>{res="D";lookback="max";logScale=false;showNorm=true;showCur=true;showMatch=false;showMatchMonth=false;bq="";bcat="all";domF=[0,1];hoverIdx=null;COINS.forEach((c,i)=>{sel[c]=(i===0);});redraw();};
+ document.getElementById("resetAll").onclick=()=>{res="D";lookback="max";logScale=false;showNorm=true;showCur=true;showMatch=false;showMatchMonth=false;bq="";bcat="all";bsort="cap";domF=[0,1];hoverIdx=null;COINS.forEach((c,i)=>{sel[c]=(i===0);});redraw();};
  window.addEventListener("mouseup",()=>{if(dragging){const N=ND();const a=Math.min(dragA,dragB),b=Math.max(dragA,dragB);if((b-a)/(N-1)>0.03){domF=[a/(N-1),b/(N-1)];}dragging=false;render();}});
  window.addEventListener("resize",()=>render());
  redraw();
