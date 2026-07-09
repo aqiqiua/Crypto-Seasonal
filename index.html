@@ -171,7 +171,6 @@
   </div>
 
   <div class="toolbar">
-   <div class="grp"><span class="lab">STEP</span><div class="seg"><button id="rD">1 day</button><button id="rH">1 hour</button></div></div>
    <div class="grp"><span class="lab">YEARS</span><div class="seg" id="lbSeg"></div></div>
    <div class="grp"><span class="lab">SHOW</span><div class="show">
      <button class="tog" id="avgBtn"><span class="sw" id="avgSw"></span>Average</button>
@@ -407,11 +406,10 @@ function statcards(){const el=document.getElementById("statcards");const c=prima
   +'<div class="scard"><div class="lbl">TYPICALLY BEST / WORST</div><div style="margin-top:12px"><div class="scrow"><span class="l"><span class="rdot" style="background:#34D399"></span>'+MON3[best.m]+'</span><span class="v" style="color:#34D399">'+(best.r>=0?"+":"")+best.r.toFixed(0)+'%</span></div><div class="scsep"></div><div class="scrow"><span class="l"><span class="rdot" style="background:#FB7185"></span>'+MON3[worst.m]+'</span><span class="v" style="color:#FB7185">'+(worst.r>=0?"+":"")+worst.r.toFixed(0)+'%</span></div></div></div>'
   +'<div class="scard"><div class="lbl">CLOSEST ANALOG</div><div style="margin-top:12px"><div class="scrow"><span class="l">Year</span><span class="v" style="color:#E2E8F0">'+(mm&&mm.year?mm.year.year+' <span style="color:#2DD4BF">'+P(mm.year.r)+'</span>':"—")+'</span></div><div class="scsep"></div><div class="scrow"><span class="l">Month</span><span class="v" style="color:#E2E8F0">'+(mm&&mm.month?MON3[curMonth()-1]+' '+mm.month.year+' <span style="color:#A5B4FC">'+P(mm.month.r)+'</span>':"—")+'</span></div></div></div>';
 }
-function encodeState(){const a=selCoins().join(",");const sh=(showNorm?1:0)+""+(showCur?1:0)+(showMatch?1:0)+(showMatchMonth?1:0);let q="a="+a+"&s="+res+"&y="+lookback+"&sh="+sh+"&log="+(logScale?1:0);if(domF[0]>0.001||domF[1]<0.999)q+="&z="+domF[0].toFixed(3)+"-"+domF[1].toFixed(3);return q;}
+function encodeState(){const a=selCoins().join(",");const sh=(showNorm?1:0)+""+(showCur?1:0)+(showMatch?1:0)+(showMatchMonth?1:0);let q="a="+a+"&y="+lookback+"&sh="+sh+"&log="+(logScale?1:0);if(domF[0]>0.001||domF[1]<0.999)q+="&z="+domF[0].toFixed(3)+"-"+domF[1].toFixed(3);return q;}
 function persist(){const q=encodeState();try{history.replaceState(null,"","#"+q);}catch(e){}if(!embedMode){try{localStorage.setItem("si_state",q);}catch(e){}}}
 function applyState(q){const p={};q.split("&").forEach(kv=>{const i=kv.indexOf("=");if(i>0)p[kv.slice(0,i)]=decodeURIComponent(kv.slice(i+1));});
  if(p.a!=null){COINS.forEach(c=>sel[c]=false);p.a.split(",").filter(Boolean).forEach(c=>{if(COINS.indexOf(c)>=0)sel[c]=true;});if(!selCoins().length)sel[COINS[0]]=true;}
- if(p.s==="H"||p.s==="D")res=p.s;
  if(p.y==="3"||p.y==="5"||p.y==="max")lookback=p.y;
  if(p.sh&&p.sh.length===4){showNorm=p.sh[0]==="1";showCur=p.sh[1]==="1";showMatch=p.sh[2]==="1";showMatchMonth=p.sh[3]==="1";}
  if(p.log!=null)logScale=p.log==="1";
@@ -430,7 +428,6 @@ function lbSeg(){const el=document.getElementById("lbSeg");const opts=[["3","3"]
 function swatches(){const col=color(primary());document.getElementById("avgSw").style.borderBottom="2.5px solid "+col;document.getElementById("curSw").style.borderBottom="2.5px dotted "+lighten(col);}
 function togStyle(btn,on,col){if(on){btn.classList.add("on");btn.style.background=alpha(col,.14);btn.style.borderColor=alpha(col,.5);btn.style.color="#F4F7FB";}else{btn.classList.remove("on");btn.style.background="";btn.style.borderColor="";btn.style.color="";}}
 function toolbarState(){const col=color(primary());
- document.getElementById("rD").classList.toggle("on",res==="D");document.getElementById("rH").classList.toggle("on",res==="H");
  togStyle(document.getElementById("avgBtn"),showNorm,col);
  togStyle(document.getElementById("curBtn"),showCur,col);
  togStyle(document.getElementById("syBtn"),showMatch,"#2DD4BF");
@@ -438,13 +435,11 @@ function toolbarState(){const col=color(primary());
  document.getElementById("logBtn").classList.toggle("on",logScale);}
 
 function redraw(){swatches();toolbarState();selrow();browser();subleg();statcards();lbSeg();render();bindPlot();persist();}
-function setRes(r){if(res===r)return;res=r;domF=[0,1];hoverIdx=null;redraw();}
 
 function start(){COINS=M.coins;COINS.forEach((c,i)=>{sel[c]=(i===0);});
  try{const h=decodeURIComponent(location.hash.slice(1));const saved=localStorage.getItem("si_state")||"";if(h)applyState(h);else if(saved)applyState(saved);}catch(e){}
  if(embedMode){document.body.classList.add("embed");browserOpen=false;}
  document.getElementById("updated").textContent="Updated · "+enUpdated(M.asof);
- document.getElementById("rD").onclick=()=>setRes("D");document.getElementById("rH").onclick=()=>setRes("H");
  document.getElementById("avgBtn").onclick=()=>{showNorm=!showNorm;redraw();};
  document.getElementById("curBtn").onclick=()=>{showCur=!showCur;redraw();};
  document.getElementById("syBtn").onclick=()=>{showMatch=!showMatch;redraw();};

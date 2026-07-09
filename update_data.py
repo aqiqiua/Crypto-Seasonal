@@ -74,7 +74,7 @@ def ms(d): return int(d.replace(tzinfo=dt.timezone.utc).timestamp() * 1000)
 def get(url):
     return urllib.request.urlopen(urllib.request.Request(url, headers=UA), timeout=40)
 
-def fetch_binance(symbol, start, end, interval="1h"):
+def fetch_binance(symbol, start, end, interval="1d"):
     out, cur, endms = [], ms(start), ms(end)
     while cur < endms:
         q = urllib.parse.urlencode({"symbol": symbol, "interval": interval,
@@ -93,7 +93,7 @@ def fetch_binance(symbol, start, end, interval="1h"):
 def fetch_bybit(symbol, start, end):
     out, startms, cur_end = [], ms(start), ms(end)
     while cur_end > startms:
-        q = urllib.parse.urlencode({"category": "spot", "symbol": symbol, "interval": "60",
+        q = urllib.parse.urlencode({"category": "spot", "symbol": symbol, "interval": "D",
                                     "start": startms, "end": cur_end, "limit": 1000})
         try:
             with get(BYBIT + "?" + q) as r: j = json.load(r)
@@ -111,7 +111,7 @@ def fetch_bybit(symbol, start, end):
 def fetch_okx(inst, start, end):
     out, startms, after = [], ms(start), ms(end)
     while after > startms:
-        q = urllib.parse.urlencode({"instId": inst, "bar": "1H", "after": after, "limit": 100})
+        q = urllib.parse.urlencode({"instId": inst, "bar": "1Dutc", "after": after, "limit": 100})
         try:
             with get(OKX + "?" + q) as r: j = json.load(r)
         except Exception as e:
@@ -190,31 +190,6 @@ def daily_years(rows, this_year, first_year):
             years[y] = [round(float(v), 3) for v in cl]
     return years, cur, sorted(years)
 
-def build_hourly(rows, this_year):
-    """existing averaged hourly seasonal index (max window) for crypto detail view"""
-    if not rows: return None, None
-    df = pd.DataFrame(rows, columns=["t", "close"]).drop_duplicates("t")
-    df["loc"] = pd.to_datetime(df["t"], unit="ms", utc=True).dt.tz_localize(None) + pd.Timedelta(hours=TZ)
-    df = df.set_index("loc").sort_index()
-    grid = np.linspace(0, 1, HRS); paths = {}; cur = None; fmax = -1.0
-    for y in sorted(set(df.index.year)):
-        yr0 = pd.Timestamp(y, 1, 1); yr1 = pd.Timestamp(y, 12, 31, 23)
-        span = (yr1 - yr0).total_seconds()
-        g = df.loc[(df.index >= yr0) & (df.index <= pd.Timestamp(y, 12, 31, 23, 59)), "close"]
-        g = g.resample("h").last().ffill().bfill()
-        if g.empty: continue
-        base = g.iloc[0]; x = (g.index - yr0).total_seconds().values / span
-        if y == this_year:
-            cur = np.interp(grid, x, ((g.values / base) - 1) * 100); fmax = float(x[-1])
-        elif x[0] <= 0.03 and x[-1] >= 0.97:
-            paths[y] = np.interp(grid, x, (np.log(g.values) - np.log(base)) * 100)
-    if not paths: return None, None
-    avg = np.mean(np.vstack([paths[y] for y in sorted(paths)]), axis=0)
-    lo, hi = float(np.min(avg)), float(np.max(avg))
-    idx0 = (avg - lo) / (hi - lo) * 100 if hi > lo else avg * 0
-    cv = [None if (cur is None or grid[i] > fmax) else round(float(cur[i]), 2) for i in range(HRS)]
-    return [round(float(v), 2) for v in idx0], cv
-
 def market_cap_order(names):
     """-> (order sorted by live market cap, {coin: market_cap_usd})"""
     cryptos = [n for n in names if n in CG]
@@ -252,12 +227,8 @@ def main():
         years, cur, yrs = daily_years(rows, this_year, fy)
         if len(yrs) < MIN_YEARS:
             print(f"{name} [{src}]: {len(yrs)}-Yr < {MIN_YEARS}, skipped"); continue
-        sea_h = cur_h = None
-        if src in CRYPTO and rows:
-            sea_h, cur_h = build_hourly(rows, this_year)
         out[name] = {"color": color, "yrs": yrs, "years": {str(y): years[y] for y in yrs},
-                     "cur": cur, "sea_h": sea_h, "cur_h": cur_h, "daily": src == "stooq",
-                     "metal": src in ("yahoo", "stooq")}
+                     "cur": cur, "daily": src == "stooq", "metal": src in ("yahoo", "stooq")}
         print(f"{name} [{src}]: {yrs[0]}-{yrs[-1]} ({len(yrs)}-Yr)  rows={len(rows)}")
     order, caps = market_cap_order([n for n in COINS if n in out])
     for name in out:
