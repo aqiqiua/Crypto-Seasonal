@@ -1,6 +1,9 @@
 <!DOCTYPE html><html lang="en"><head><meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
 <title>Seasonal Index · Crypto</title>
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link rel="mask-icon" href="favicon.svg" color="#34D399">
+<meta name="theme-color" content="#080D1A">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -143,7 +146,7 @@
   </div>
 
   <div class="selrow" id="selrow"></div>
-  <div class="browser" id="browser" hidden></div>
+  <div class="browser" id="browser"></div>
   <div class="subleg" id="subleg"></div>
 
   <div class="chartcard">
@@ -181,7 +184,7 @@ const PERDAY=()=>res==="H"?24:1;
 let domF=[0,1];
 let hoverIdx=null, dragA=null, dragB=null, dragging=false;
 let showNorm=true, showCur=true, showMatch=false, showMatchMonth=false, lookback="max", logScale=false;
-let browserOpen=false, bq="", bcat="all";
+let browserOpen=true, bq="", bcat="all";
 const sel={}, seaCache={}, matchCache={};
 
 const VW=1060,VH=470,padL=46,padR=58,padT=28,padB=40;
@@ -278,9 +281,7 @@ function selrow(){const el=document.getElementById("selrow");el.innerHTML="";
  selCoins().forEach(c=>{const chip=document.createElement("button");chip.className="chip";chip.style.background=alpha(color(c),.14);chip.style.border="1px solid "+alpha(color(c),.55);chip.style.boxShadow="0 6px 20px "+alpha(color(c),.22);chip.style.color="#F4F7FB";
    let d="";const dv=deltaOf(c);if(dv!=null)d=' <span class="d" style="color:'+(dv>=0?"#34D399":"#FB7185")+'">'+(dv>=0?"+":"")+dv.toFixed(0)+'%</span>';
    chip.innerHTML='<span class="dot" style="background:'+color(c)+'"></span>'+c+' <span class="yr">'+years(c)+'y</span>'+d+' <span class="x">✕</span>';
-   chip.onclick=()=>{sel[c]=false;redraw();};el.appendChild(chip);});
- const add=document.createElement("button");add.className="addbtn"+(browserOpen?" on":"");add.innerHTML=browserOpen?"✕ Close":('＋ Add asset <span class="n">'+COINS.length+'</span>');
- add.onclick=()=>{browserOpen=!browserOpen;bq="";redraw();};el.appendChild(add);}
+   chip.onclick=()=>{sel[c]=false;redraw();};el.appendChild(chip);});}
 
 function browser(){const el=document.getElementById("browser");if(!browserOpen){el.hidden=true;el.innerHTML="";return;}el.hidden=false;
  const q=bq.trim().toUpperCase();
@@ -338,7 +339,7 @@ function start(){COINS=M.coins;COINS.forEach((c,i)=>{sel[c]=(i===0);});
  document.getElementById("smBtn").onclick=()=>{showMatchMonth=!showMatchMonth;redraw();};
  document.getElementById("logBtn").onclick=()=>{logScale=!logScale;redraw();};
  document.getElementById("zr").onclick=resetZoom;
- document.getElementById("resetAll").onclick=()=>{res="D";lookback="max";logScale=false;showNorm=true;showCur=true;showMatch=false;showMatchMonth=false;browserOpen=false;bq="";bcat="all";domF=[0,1];hoverIdx=null;COINS.forEach((c,i)=>{sel[c]=(i===0);});redraw();};
+ document.getElementById("resetAll").onclick=()=>{res="D";lookback="max";logScale=false;showNorm=true;showCur=true;showMatch=false;showMatchMonth=false;bq="";bcat="all";domF=[0,1];hoverIdx=null;COINS.forEach((c,i)=>{sel[c]=(i===0);});redraw();};
  window.addEventListener("mouseup",()=>{if(dragging){const N=ND();const a=Math.min(dragA,dragB),b=Math.max(dragA,dragB);if((b-a)/(N-1)>0.03){domF=[a/(N-1),b/(N-1)];}dragging=false;render();}});
  window.addEventListener("resize",()=>render());
  redraw();
