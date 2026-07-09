@@ -27,7 +27,7 @@ COINS = {                  # name -> (symbol, color, source)   [top-50 by market
     "XLM":  ("XLMUSDT",  "#9AA7C7", "binance"),
     "LINK": ("LINKUSDT", "#3B82F6", "binance"),
     "BCH":  ("BCHUSDT",  "#22C55E", "binance"),
-    "GRAM": ("GRAM-USDT","#EF4444", "okx"),
+    "GRAM": ("GRAMUSDT", "#EF4444", "bybit"),
     "LTC":  ("LTCUSDT",  "#94A3B8", "binance"),
     "HBAR": ("HBARUSDT", "#14B8A6", "binance"),
     "SUI":  ("SUIUSDT",  "#38BDF8", "binance"),
