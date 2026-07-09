@@ -12,26 +12,48 @@ import numpy as np, pandas as pd
 
 TZ = 3
 FIRST_YEAR = 2018          # crypto start; metals use all available history
-COINS = {                  # name -> (symbol, color, source)
-    "BTC":  ("BTCUSDT",  "#FB7E14", "binance"),
+COINS = {                  # name -> (symbol, color, source)   [top-50 by market cap,
+    "BTC":  ("BTCUSDT",  "#FB7E14", "binance"),   # excluding stablecoins & wrapped tokens]
     "ETH":  ("ETHUSDT",  "#818CF8", "binance"),
     "BNB":  ("BNBUSDT",  "#A3E635", "binance"),
-    "SOL":  ("SOLUSDT",  "#A855F7", "binance"),
     "XRP":  ("XRPUSDT",  "#06B6D4", "binance"),
-    "DOGE": ("DOGEUSDT", "#EC4899", "binance"),
+    "SOL":  ("SOLUSDT",  "#A855F7", "binance"),
     "TRX":  ("TRXUSDT",  "#FB7185", "binance"),
+    "HYPE": ("HYPE-USDT","#2DE1C2", "okx"),
+    "DOGE": ("DOGEUSDT", "#EC4899", "binance"),
+    "LEO":  ("LEO-USDT", "#6FCF97", "okx"),
+    "ZEC":  ("ZECUSDT",  "#FDE047", "binance"),
+    "ADA":  ("ADAUSDT",  "#4F9BFF", "binance"),
+    "XLM":  ("XLMUSDT",  "#9AA7C7", "binance"),
     "LINK": ("LINKUSDT", "#3B82F6", "binance"),
     "BCH":  ("BCHUSDT",  "#22C55E", "binance"),
-    "LTC":  ("LTCUSDT",  "#94A3B8", "binance"),
     "GRAM": ("GRAM-USDT","#EF4444", "okx"),
-    "ZEC":  ("ZECUSDT",  "#FDE047", "binance"),
+    "LTC":  ("LTCUSDT",  "#94A3B8", "binance"),
+    "HBAR": ("HBARUSDT", "#14B8A6", "binance"),
+    "SUI":  ("SUIUSDT",  "#38BDF8", "binance"),
+    "AVAX": ("AVAXUSDT", "#FF5A5F", "binance"),
+    "CRO":  ("CRO-USDT", "#2E5BFF", "okx"),
+    "SHIB": ("SHIBUSDT", "#FF9F45", "binance"),
+    "NEAR": ("NEARUSDT", "#00D9A3", "binance"),
+    "UNI":  ("UNIUSDT",  "#FF6FB5", "binance"),
+    "TAO":  ("TAOUSDT",  "#34D399", "binance"),
+    "WLFI": ("WLFIUSDT", "#D4A373", "binance"),
+    "ASTER":("ASTERUSDT","#B794F6", "binance"),
+    "OKB":  ("OKB-USDT", "#1FA2FF", "okx"),
+    "ONDO": ("ONDOUSDT", "#6C8CFF", "binance"),
+    "DOT":  ("DOTUSDT",  "#E6007A", "binance"),
+    "HTX":  ("HTXUSDT",  "#7B9CF0", "bybit"),
     "XAU":  ("GC=F",     "#FFD24A", "yahoo"),
     "XAG":  ("SI=F",     "#D6DCE6", "yahoo"),
 }
 METAL_FIRST_YEAR = 1990    # don't go absurdly far back for metals
-CG = {"BTC":"bitcoin","ETH":"ethereum","BNB":"binancecoin","SOL":"solana","XRP":"ripple",
-      "DOGE":"dogecoin","TRX":"tron","LINK":"chainlink","BCH":"bitcoin-cash","LTC":"litecoin",
-      "GRAM":"the-open-network","ZEC":"zcash"}
+CG = {"BTC":"bitcoin","ETH":"ethereum","BNB":"binancecoin","XRP":"ripple","SOL":"solana",
+      "TRX":"tron","HYPE":"hyperliquid","DOGE":"dogecoin","LEO":"leo-token","ZEC":"zcash",
+      "ADA":"cardano","XLM":"stellar","LINK":"chainlink","BCH":"bitcoin-cash",
+      "GRAM":"the-open-network","LTC":"litecoin","HBAR":"hedera-hashgraph","SUI":"sui",
+      "AVAX":"avalanche-2","CRO":"crypto-com-chain","SHIB":"shiba-inu","NEAR":"near",
+      "UNI":"uniswap","TAO":"bittensor","WLFI":"world-liberty-financial","ASTER":"aster-2",
+      "OKB":"okb","ONDO":"ondo-finance","DOT":"polkadot","HTX":"htx-dao"}
 BINANCE = "https://data-api.binance.vision/api/v3/klines"
 BYBIT   = "https://api.bybit.com/v5/market/kline"
 OKX     = "https://www.okx.com/api/v5/market/history-candles"
@@ -186,86 +208,21 @@ def build_hourly(rows, this_year):
     return [round(float(v), 2) for v in idx0], cv
 
 def market_cap_order(names):
+    """-> (order sorted by live market cap, {coin: market_cap_usd})"""
     cryptos = [n for n in names if n in CG]
     metals = [n for n in names if n not in CG]
+    caps = {}
     try:
         ids = ",".join(CG[n] for n in cryptos)
         url = "https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids=" + ids + "&per_page=250"
         with get(url) as r: data = json.load(r)
         cap = {d["id"]: (d.get("market_cap") or 0) for d in data}
-        cryptos.sort(key=lambda n: cap.get(CG[n], 0), reverse=True)
+        caps = {n: cap.get(CG[n], 0) for n in cryptos}
+        cryptos.sort(key=lambda n: caps.get(n, 0), reverse=True)
     except Exception as e:
         print("coingecko order failed, keeping default:", e)
     order = cryptos + metals
-    print("order:", order); return order
-
-STABLES = {"usdt","usdc","dai","fdusd","usde","tusd","usdd","pyusd","busd","gusd","usdp",
-           "frax","lusd","susd","usds","usdl","crvusd","eurc","usd1"}
-WRAPPED = {"wbtc","weth","wsteth","steth","weeth","wbeth","reth","cbeth","meth","rseth","ezeth",
-           "bnsol","jupsol","wbnb","lbtc","solvbtc","cbbtc","tbtc","susde","weeth"}
-
-def _last(cur):
-    for i in range(len(cur) - 1, -1, -1):
-        if cur[i] is not None: return i
-    return -1
-
-def _corr(a, b, lo, hi):
-    xs, ys = [], []
-    for i in range(lo, hi + 1):
-        u, v = a[i], b[i]
-        if u is None or v is None: continue
-        xs.append(u); ys.append(v)
-    n = len(xs)
-    if n < 6: return None
-    mx = sum(xs) / n; my = sum(ys) / n
-    sxy = sxx = syy = 0.0
-    for i in range(n):
-        dx = xs[i] - mx; dy = ys[i] - my
-        sxy += dx * dy; sxx += dx * dx; syy += dy * dy
-    if sxx <= 0 or syy <= 0: return None
-    return sxy / ((sxx * syy) ** 0.5)
-
-def best_match(years, cur, yrs):
-    L = _last(cur)
-    if L < 20: return None
-    best = None
-    for y in yrs:
-        r = _corr(cur, years[y], 0, L)
-        if r is not None and (best is None or r > best[1]):
-            best = (y, r)
-    return best
-
-def top_candidates():
-    try:
-        url = "https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=50&page=1"
-        with get(url) as r: data = json.load(r)
-    except Exception as e:
-        print("top50 list failed:", e); return []
-    names = []
-    for d in data:
-        sym = (d.get("symbol") or "").lower(); nm = sym.upper()
-        if not sym or sym in STABLES or sym in WRAPPED or nm in COINS: continue
-        names.append(nm)
-    return names
-
-def scan_top(this_year):
-    best = None; cands = top_candidates()
-    print(f"scanning {len(cands)} top pairs (daily)...")
-    for nm in cands:
-        rows = []
-        for y in range(FIRST_YEAR, this_year + 1):
-            rows += fetch_binance(nm + "USDT", dt.datetime(y, 1, 1), dt.datetime(y + 1, 1, 1, 3), "1d")
-        if not rows: continue
-        years, cur, yrs = daily_years(rows, this_year, FIRST_YEAR)
-        if len(yrs) < 3: continue
-        bm = best_match(years, cur, yrs)
-        if bm and (best is None or bm[1] > best["score"]):
-            best = {"name": nm, "years": years, "cur": cur, "yrs": yrs, "year": bm[0], "score": bm[1]}
-    if best:
-        print(f"SUGGESTED: {best['name']} ~ {best['year']} ({best['score']*100:.0f}%)")
-    else:
-        print("SUGGESTED: none")
-    return best
+    print("order:", order); return order, caps
 
 def main():
     now_local = dt.datetime.now(dt.timezone.utc).replace(tzinfo=None) + dt.timedelta(hours=TZ)
@@ -289,22 +246,17 @@ def main():
         if src in CRYPTO and rows:
             sea_h, cur_h = build_hourly(rows, this_year)
         out[name] = {"color": color, "yrs": yrs, "years": {str(y): years[y] for y in yrs},
-                     "cur": cur, "sea_h": sea_h, "cur_h": cur_h, "daily": src == "stooq"}
+                     "cur": cur, "sea_h": sea_h, "cur_h": cur_h, "daily": src == "stooq",
+                     "metal": src in ("yahoo", "stooq")}
         span = f"{yrs[0]}-{yrs[-1]} ({len(yrs)}-Yr)" if yrs else "n/a"
         print(f"{name} [{src}]: {span}  rows={len(rows)}")
-    order = market_cap_order(list(COINS))
-    sug = scan_top(this_year); suggested = None
-    if sug:
-        nm = sug["name"]; suggested = nm
-        out[nm] = {"color": "#F0ABFC", "yrs": sug["yrs"],
-                   "years": {str(y): sug["years"][y] for y in sug["yrs"]},
-                   "cur": sug["cur"], "sea_h": None, "cur_h": None, "daily": True,
-                   "suggested": True, "match": {"year": sug["year"], "score": round(sug["score"], 3)}}
-        order = order + [nm]
+    order, caps = market_cap_order(list(COINS))
+    for name in out:
+        out[name]["mcap"] = caps.get(name, 0)
     yr0 = dt.datetime(this_year, 1, 1); yr1 = dt.datetime(this_year, 12, 31, 23)
     frac = min(max((now_local - yr0).total_seconds() / (yr1 - yr0).total_seconds(), 0.0), 1.0)
     months = ["","января","февраля","марта","апреля","мая","июня","июля","августа","сентября","октября","ноября","декабря"]
-    out["_meta"] = {"tz": "UTC+3", "H": HRS, "Dn": DAYS, "coins": order, "suggested": suggested,
+    out["_meta"] = {"tz": "UTC+3", "H": HRS, "Dn": DAYS, "coins": order,
                     "today_h": round(frac * (HRS - 1)), "today_d": round(frac * (DAYS - 1)),
                     "asof": f"{now_local.day} {months[now_local.month]} {now_local.year}"}
     json.dump(out, open("data.json", "w"), separators=(",", ":"), ensure_ascii=False)
