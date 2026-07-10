@@ -65,9 +65,12 @@ BYBIT   = "https://api.bybit.com/v5/market/kline"
 OKX     = "https://www.okx.com/api/v5/market/history-candles"
 STOOQ   = "https://stooq.com/q/d/l/"
 YF      = "https://query1.finance.yahoo.com/v8/finance/chart/"
+BITSTAMP = "https://www.bitstamp.net/api/v2/ohlc/btcusd/"   # BTC/USD daily back to 2012
 UA = {"User-Agent": "Mozilla/5.0 (seasonal-index-bot)"}
 HRS, DAYS = 365 * 24, 365
 MIN_YEARS = 3          # drop assets without at least this many complete years
+HALVINGS = [dt.date(2012, 11, 28), dt.date(2016, 7, 9), dt.date(2020, 5, 11), dt.date(2024, 4, 20)]
+CYCLE_DAYS = 1461      # ~4 years of days since a halving
 CRYPTO = {"binance", "okx", "bybit"}
 
 def ms(d): return int(d.replace(tzinfo=dt.timezone.utc).timestamp() * 1000)
@@ -164,6 +167,56 @@ def fetch_yahoo(symbol):
         print("  yahoo parse error", symbol, e)
     return out
 
+def fetch_bitstamp_daily():
+    """BTC/USD daily closes since 2012 (for halving-cycle view) -> [[ms, close], ...]"""
+    out, cur = [], int(dt.datetime(2012, 1, 1).timestamp())
+    end = int((dt.datetime.utcnow() + dt.timedelta(days=1)).timestamp())
+    while cur < end:
+        q = urllib.parse.urlencode({"step": 86400, "limit": 1000, "start": cur})
+        try:
+            with get(BITSTAMP + "?" + q) as r: j = json.load(r)
+        except Exception as e:
+            print("  bitstamp error", e); break
+        o = (j.get("data") or {}).get("ohlc") or []
+        if not o: break
+        for k in o: out.append([int(k["timestamp"]) * 1000, float(k["close"])])
+        cur = int(o[-1]["timestamp"]) + 86400
+        if len(o) < 1000: break
+        time.sleep(0.2)
+    return out
+
+def build_cycles(rows):
+    """Align BTC by days-since-halving: each cycle's cumulative % path + geo-mean avg."""
+    if not rows: return None
+    df = pd.DataFrame(rows, columns=["t", "close"]).drop_duplicates("t")
+    df["d"] = pd.to_datetime(df["t"], unit="ms", utc=True).dt.tz_localize(None).dt.normalize()
+    s = df.set_index("d")["close"].resample("D").last().ffill()
+    s = s[s > 0]
+    if s.empty: return None
+    today = s.index[-1]
+    lst = []
+    for i, h in enumerate(HALVINGS):
+        h_ts = pd.Timestamp(h)
+        seg = s[s.index >= h_ts]
+        if seg.empty: continue
+        base = float(seg.iloc[0])
+        end = pd.Timestamp(HALVINGS[i + 1]) if i + 1 < len(HALVINGS) else today
+        current = (i == len(HALVINGS) - 1)
+        path = [None] * CYCLE_DAYS
+        for dd in range(CYCLE_DAYS):
+            date = h_ts + pd.Timedelta(days=dd)
+            if date > today or date > end: break
+            if date in s.index:
+                path[dd] = round(float(s.loc[date] / base - 1) * 100, 2)
+        lst.append({"label": str(h.year), "path": path, "current": current})
+    complete = [c for c in lst if not c["current"]]
+    avg = [None] * CYCLE_DAYS
+    for dd in range(CYCLE_DAYS):
+        vals = [c["path"][dd] for c in complete if c["path"][dd] is not None and c["path"][dd] > -100]
+        if vals:
+            avg[dd] = round(float(np.exp(np.mean([np.log(1 + v / 100) for v in vals])) - 1) * 100, 2)
+    return {"days": CYCLE_DAYS, "today": int((today - pd.Timestamp(HALVINGS[-1])).days), "list": lst, "avg": avg}
+
 def daily_years(rows, this_year, first_year):
     """-> years={Y:[365 cumLog]}, cur=[365 % partial], yrs=[...]"""
     if not rows: return {}, [None]*DAYS, []
@@ -233,6 +286,11 @@ def main():
     order, caps = market_cap_order([n for n in COINS if n in out])
     for name in out:
         out[name]["mcap"] = caps.get(name, 0)
+    try:
+        cyc = build_cycles(fetch_bitstamp_daily())
+        if cyc: out["_cycles"] = cyc; print(f"cycles: {[c['label'] for c in cyc['list']]}")
+    except Exception as e:
+        print("cycles failed:", e)
     yr0 = dt.datetime(this_year, 1, 1); yr1 = dt.datetime(this_year, 12, 31, 23)
     frac = min(max((now_local - yr0).total_seconds() / (yr1 - yr0).total_seconds(), 0.0), 1.0)
     months = ["","января","февраля","марта","апреля","мая","июня","июля","августа","сентября","октября","ноября","декабря"]

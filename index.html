@@ -112,7 +112,7 @@
  .crt{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
  .mini{padding:4px 10px;border-radius:999px;border:1px solid rgba(148,163,184,.16);background:rgba(148,163,184,.05);color:var(--text2);cursor:pointer;font:700 10px var(--mono);letter-spacing:.04em;transition:.15s}
  .mini:hover{color:var(--text);border-color:rgba(52,211,153,.4)}
- .embed .toolbar,.embed .selrow,.embed #browser,.embed .subleg,.embed .statcards,.embed #heatmap,.embed .foot{display:none!important}
+ .embed .toolbar,.embed .selrow,.embed #browser,.embed .subleg,.embed .statcards,.embed #heatmap,.embed #cycles,.embed .foot{display:none!important}
  .embed .wrap{padding:14px 16px}
  .embed .chartcard{margin-top:10px}
  .embed .head{margin-bottom:4px}
@@ -148,6 +148,13 @@
  .hmhead{color:var(--muted);font-weight:700}
  .hmylab{text-align:left;padding-left:2px;color:var(--text);font-weight:700}
  .hmnote{font:600 12px var(--sans);color:var(--muted)}
+ .cycles{margin-top:14px;padding:18px 18px 14px;border-radius:20px;background:rgba(148,163,184,.05);border:1px solid rgba(148,163,184,.12);backdrop-filter:blur(14px)}
+ .cyh{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px 16px;margin-bottom:10px}
+ .cyt{font:800 10px var(--mono);letter-spacing:.16em;color:var(--muted)}
+ .cyleg{display:flex;flex-wrap:wrap;gap:9px 14px;font:600 11px var(--sans);color:var(--text2)}
+ .cyleg .li{display:flex;align-items:center;gap:6px}
+ .cyleg .sw{display:inline-block;width:15px;height:0;border-bottom:2.5px solid}
+ .cynote{margin-top:10px;font:500 11px/1.5 var(--sans);color:rgba(148,163,184,.5)}
  #plot{position:relative;width:100%}
  #svg{width:100%;height:auto;display:block;overflow:visible;touch-action:none;cursor:crosshair}
  #tip{position:absolute;display:none;pointer-events:none;z-index:5;min-width:158px;padding:11px 13px;border-radius:14px;background:rgba(12,18,32,.86);border:1px solid rgba(148,163,184,.2);backdrop-filter:blur(10px);box-shadow:0 14px 40px rgba(0,0,0,.5)}
@@ -217,6 +224,7 @@
 
   <div class="statcards" id="statcards"></div>
   <div class="heatmap" id="heatmap" hidden></div>
+  <div class="cycles" id="cycles" hidden></div>
 
   <div class="foot">UPDATES ONCE A DAY · UTC+3</div>
  </div>
@@ -450,7 +458,8 @@ function embedCode(){persist();const src=location.origin+location.pathname+"#"+e
 function copyText(t,btn,label){const done=()=>{btn.textContent="Copied ✓";setTimeout(()=>{btn.textContent=label;},1600);};if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(t).then(done).catch(done);}else{done();}}
 function openShare(){persist();document.getElementById("shareUrl").value=location.href;document.getElementById("shareModal").hidden=false;const u=document.getElementById("shareUrl");u.focus();u.select();}
 function closeShare(){document.getElementById("shareModal").hidden=true;}
-const FLAGS=[{key:"heatmap",label:"Monthly return heatmap",desc:"A year × month grid of returns for the selected asset — spot which months are usually strong or weak at a glance."}];
+const FLAGS=[{key:"heatmap",label:"Monthly return heatmap",desc:"A year × month grid of returns for the selected asset — spot which months are usually strong or weak at a glance."},
+ {key:"halving",label:"Halving-cycle overlay (BTC)",desc:"Compare BTC's return by days-since-halving across every cycle since 2012 — see where the current cycle sits versus past ones. Log scale."}];
 let flags={};
 function loadFlags(){try{flags=JSON.parse(localStorage.getItem("si_flags"))||{};}catch(e){flags={};}FLAGS.forEach(f=>{if(typeof flags[f.key]!=="boolean")flags[f.key]=false;});}
 function saveFlags(){try{localStorage.setItem("si_flags",JSON.stringify(flags));}catch(e){}}
@@ -475,6 +484,27 @@ function heatmap(){const el=document.getElementById("heatmap");if(!flags.heatmap
  rows.forEach(r=>{h+='<div class="hmcell hmylab">'+r.label+'</div>'+r.vals.map(cell).join("");});
  h+='<div class="hmcell hmylab" style="color:var(--accent-bright)">AVG</div>'+avg.map(cell).join("");
  h+='</div>';el.innerHTML=h;}
+const CYCOL={"2012":"#64748B","2016":"#818CF8","2020":"#2DD4BF","2024":"#FB7E14"};
+function cycles(){const el=document.getElementById("cycles");if(!flags.halving){el.hidden=true;el.innerHTML="";return;}el.hidden=false;
+ const C=D._cycles;if(!C){el.innerHTML='<div class="hmnote">Cycle data unavailable.</div>';return;}
+ const N=C.days,W=1060,H=380,pL=56,pR=18,pT=18,pB=32,pw=W-pL-pR,ph=H-pT-pB;
+ const xAt=d=>pL+d/(N-1)*pw;const lg=v=>Math.log(1+Math.max(-99,v)/100);
+ let lo=Infinity,hi=-Infinity;C.list.forEach(c=>c.path.forEach(v=>{if(v!=null){const t=lg(v);if(t<lo)lo=t;if(t>hi)hi=t;}}));
+ if(lo===Infinity){lo=-1;hi=1;}const pd=(hi-lo)*0.06||0.2;lo-=pd;hi+=pd;
+ const yAt=v=>pT+(1-(lg(v)-lo)/((hi-lo)||1))*ph;
+ const pth=arr=>{let s="",pen=false;for(let d=0;d<N;d++){const v=arr[d];if(v==null){pen=false;continue;}s+=(pen?"L":"M")+xAt(d).toFixed(1)+" "+yAt(v).toFixed(1)+" ";pen=true;}return s.trim();};
+ let s='<svg viewBox="0 0 '+W+' '+H+'" style="width:100%;height:auto;display:block;overflow:visible" xmlns="http://www.w3.org/2000/svg">';
+ s+='<defs><filter id="cyglow" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="2" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>';
+ [-75,0,100,300,1000,3000,8000].forEach(v=>{const t=lg(v);if(t<lo||t>hi)return;const y=yAt(v).toFixed(1);s+='<line x1="'+pL+'" x2="'+(W-pR)+'" y1="'+y+'" y2="'+y+'" stroke="rgba(148,163,184,.1)"/><text x="'+(pL-8)+'" y="'+(+y+3.5)+'" text-anchor="end" fill="rgba(148,163,184,.5)" font-size="10.5" font-family="\'JetBrains Mono\',monospace">'+(v>=0?"+":"")+v+'%</text>';});
+ [[0,"Halving"],[365,"Yr 1"],[730,"Yr 2"],[1095,"Yr 3"],[1460,"Yr 4"]].forEach(([d,lab])=>{if(d>=N)return;const x=xAt(d).toFixed(1);s+='<line x1="'+x+'" x2="'+x+'" y1="'+pT+'" y2="'+(pT+ph)+'" stroke="rgba(148,163,184,.07)"/><text x="'+x+'" y="'+(pT+ph+18)+'" text-anchor="middle" fill="rgba(148,163,184,.5)" font-size="10.5" font-family="\'JetBrains Mono\',monospace">'+lab+'</text>';});
+ if(C.avg){const d=pth(C.avg);if(d)s+='<path d="'+d+'" fill="none" stroke="#94A3B8" stroke-width="1.6" stroke-dasharray="5 4" opacity="0.8"/>';}
+ C.list.forEach(c=>{const d=pth(c.path);if(!d)return;const col=CYCOL[c.label]||"#888";s+='<path d="'+d+'" fill="none" stroke="'+col+'" stroke-width="'+(c.current?3:1.8)+'" stroke-linecap="round" stroke-linejoin="round" opacity="'+(c.current?1:0.85)+'"'+(c.current?' filter="url(#cyglow)"':'')+'/>';});
+ const cc=C.list.find(c=>c.current);if(cc&&C.today<N&&cc.path[C.today]!=null){const x=xAt(C.today),y=yAt(cc.path[C.today]);s+='<line x1="'+x.toFixed(1)+'" x2="'+x.toFixed(1)+'" y1="'+pT+'" y2="'+(pT+ph)+'" stroke="rgba(251,126,20,.45)" stroke-dasharray="3 4"/><circle cx="'+x.toFixed(1)+'" cy="'+y.toFixed(1)+'" r="4.5" fill="#FB7E14" stroke="#080D1A" stroke-width="2.5"/>';}
+ s+='</svg>';
+ let leg='';C.list.forEach(c=>{leg+='<span class="li"><span class="sw" style="border-color:'+(CYCOL[c.label]||"#888")+'"></span>'+c.label+(c.current?" · now":"")+'</span>';});
+ leg+='<span class="li"><span class="sw" style="border-bottom-style:dashed;border-color:#94A3B8"></span>Avg (past)</span>';
+ el.innerHTML='<div class="cyh"><span class="cyt">BTC · RETURN SINCE HALVING · LOG</span><div class="cyleg">'+leg+'</div></div>'+s+'<div class="cynote">Cumulative % since each halving (Bitstamp data from 2012). 3 full cycles + the current one (orange, ● = today · day '+C.today+'). Log scale — early cycles ran far larger.</div>';
+}
 function lbSeg(){const el=document.getElementById("lbSeg");const opts=[["3","3"],["5","5"],["max","Max"]];el.innerHTML="";opts.forEach(([v,lab])=>{const b=document.createElement("button");b.textContent=lab;if(lookback===v)b.className="on";b.onclick=()=>{lookback=v;for(const k in seaCache)delete seaCache[k];for(const k in metCache)delete metCache[k];redraw();};el.appendChild(b);});}
 function swatches(){const col=color(primary());document.getElementById("avgSw").style.borderBottom="2.5px solid "+col;document.getElementById("curSw").style.borderBottom="2.5px dotted "+lighten(col);}
 function togStyle(btn,on,col){if(on){btn.classList.add("on");btn.style.background=alpha(col,.14);btn.style.borderColor=alpha(col,.5);btn.style.color="#F4F7FB";}else{btn.classList.remove("on");btn.style.background="";btn.style.borderColor="";btn.style.color="";}}
@@ -485,7 +515,7 @@ function toolbarState(){const col=color(primary());
  togStyle(document.getElementById("smBtn"),showMatchMonth,"#A5B4FC");
  document.getElementById("logBtn").classList.toggle("on",logScale);}
 
-function redraw(){swatches();toolbarState();selrow();browser();subleg();statcards();heatmap();lbSeg();render();bindPlot();persist();}
+function redraw(){swatches();toolbarState();selrow();browser();subleg();statcards();heatmap();cycles();lbSeg();render();bindPlot();persist();}
 
 function start(){COINS=M.coins;COINS.forEach((c,i)=>{sel[c]=(i===0);});
  loadFlags();
