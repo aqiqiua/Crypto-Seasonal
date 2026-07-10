@@ -288,12 +288,13 @@ const sel={}, seaCache={}, matchCache={}, metCache={};
 
 const VW=1060,VH=470,padL=46,padR=58,padT=28,padB=40;
 const plotW=VW-padL-padR, plotH=VH-padT-padB, plotLeft=padL, plotTop=padT, plotBottom=padT+plotH, plotRight=padL+plotW;
-let i0=0,i1=0,rmin=0,rmax=1;
+let i0=0,i1=0,rmin=0,rmax=1,vf=[0,1];
 const xAt=i=>plotLeft+((i-i0)/((i1-i0)||1))*plotW;
-const yL=v=>plotTop+(1-v/100)*plotH;
+const natPix=n=>plotBottom-((n-vf[0])/((vf[1]-vf[0])||1))*plotH;
+const yL=v=>natPix(v/100);
 function rT(v){return logScale?Math.log(Math.max(1e-6,(100+v)/100)):v;}
 function rIT(t){return logScale?(Math.exp(t)-1)*100:t;}
-const yR=v=>plotTop+(1-(rT(v)-rmin)/((rmax-rmin)||1))*plotH;
+const yR=v=>natPix((rT(v)-rmin)/((rmax-rmin)||1));
 
 function md(d0){let m=0,d=Math.max(0,Math.min(364,d0));while(m<11&&d>=ML[m]){d-=ML[m];m++;}return{mo:m+1,dd:d+1};}
 function dateFmt(i){const pd=PERDAY();const day=Math.floor(i/pd),hr=res==="H"?i%24:null;const o=md(day);return MON3[o.mo-1]+" "+o.dd+(hr!=null?", "+String(hr).padStart(2,"0")+":00":"");}
@@ -337,17 +338,22 @@ function render(){
  const SR=seriesList();rscale(SR);
  const selc=selCoins();const single=selc.length===1?selc[0]:null;
  let s='<svg id="svg" viewBox="0 0 '+VW+' '+VH+'" xmlns="http://www.w3.org/2000/svg">';
- if(single&&showNorm){s+='<defs><linearGradient id="areaG" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="'+color(single)+'" stop-opacity="0.2"/><stop offset="1" stop-color="'+color(single)+'" stop-opacity="0"/></linearGradient></defs>';}
- for(let k=0;k<=4;k++){const lv=k*25;const y=yL(lv).toFixed(1);s+='<line x1="'+plotLeft+'" x2="'+plotRight+'" y1="'+y+'" y2="'+y+'" stroke="rgba(148,163,184,.12)"/>';
-   s+='<text x="'+(plotLeft-8)+'" y="'+(+y+3.5)+'" text-anchor="end" fill="rgba(148,163,184,.55)" font-size="11" font-family="\'JetBrains Mono\',monospace">'+lv+'</text>';
-   const rv=rIT(rmin+(k/4)*(rmax-rmin));s+='<text x="'+(plotRight+8)+'" y="'+(+y+3.5)+'" fill="rgba(148,163,184,.5)" font-size="11" font-family="\'JetBrains Mono\',monospace">'+(rv>=0?"+":"")+rv.toFixed(0)+'%</text>';}
+ s+='<defs><clipPath id="plotclip"><rect x="'+plotLeft+'" y="'+plotTop+'" width="'+plotW+'" height="'+plotH+'"/></clipPath>';
+ if(single&&showNorm)s+='<linearGradient id="areaG" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="'+color(single)+'" stop-opacity="0.2"/><stop offset="1" stop-color="'+color(single)+'" stop-opacity="0"/></linearGradient>';
+ s+='</defs>';
+ for(let k=0;k<=4;k++){const p=k/4;const y=(plotBottom-p*plotH).toFixed(1);const nat=vf[0]+p*(vf[1]-vf[0]);const lv=nat*100;const rv=rIT(rmin+nat*(rmax-rmin));
+   s+='<line x1="'+plotLeft+'" x2="'+plotRight+'" y1="'+y+'" y2="'+y+'" stroke="rgba(148,163,184,.12)"/>';
+   s+='<text x="'+(plotLeft-8)+'" y="'+(+y+3.5)+'" text-anchor="end" fill="rgba(148,163,184,.55)" font-size="11" font-family="\'JetBrains Mono\',monospace">'+(Math.abs(lv-Math.round(lv))<0.5?Math.round(lv):lv.toFixed(1))+'</text>';
+   s+='<text x="'+(plotRight+8)+'" y="'+(+y+3.5)+'" fill="rgba(148,163,184,.5)" font-size="11" font-family="\'JetBrains Mono\',monospace">'+(rv>=0?"+":"")+rv.toFixed(0)+'%</text>';}
  const pd=PERDAY();for(let m=0;m<12;m++){const fi=MSTART[m]*pd;if(fi>=i0&&fi<=i1){const x=xAt(fi).toFixed(1);s+='<line x1="'+x+'" x2="'+x+'" y1="'+plotTop+'" y2="'+plotBottom+'" stroke="rgba(148,163,184,.07)"/>';s+='<text x="'+x+'" y="'+(plotTop-9)+'" text-anchor="middle" fill="rgba(148,163,184,.5)" font-size="10.5" font-family="\'JetBrains Mono\',monospace" letter-spacing="1">'+MON[m]+'</text>';}}
+ s+='<g clip-path="url(#plotclip)">';
  if(single&&showNorm){const arr=res==="H"?D[single].sea_h:seasonal(single).idx;if(arr){const p=pathOf(arr,"L");if(p)s+='<path d="'+p+' L'+xAt(i1).toFixed(1)+' '+plotBottom.toFixed(1)+' L'+xAt(i0).toFixed(1)+' '+plotBottom.toFixed(1)+' Z" fill="url(#areaG)"/>';}}
  SR.forEach(se=>{const d=pathOf(se.data,se.axis);if(!d)return;s+='<path d="'+d+'" fill="none" stroke="'+se.color+'" stroke-width="'+se.w+'" '+(se.dash!=="none"?'stroke-dasharray="'+se.dash+'" ':'')+'stroke-linecap="round" stroke-linejoin="round" opacity="'+se.op+'"/>';});
+ s+='</g>';
  for(let k=0;k<=6;k++){const fi=i0+(i1-i0)*k/6;const anc=k===0?"start":k===6?"end":"middle";s+='<text x="'+xAt(fi).toFixed(1)+'" y="'+(plotBottom+20)+'" text-anchor="'+anc+'" fill="rgba(148,163,184,.5)" font-size="10.5" font-family="\'JetBrains Mono\',monospace">'+dateFmt(Math.round(fi))+'</text>';}
  if(dragging&&dragA!=null&&dragB!=null){const a=Math.min(dragA,dragB),b=Math.max(dragA,dragB);if(b>a){s+='<rect x="'+xAt(a).toFixed(1)+'" y="'+plotTop+'" width="'+(xAt(b)-xAt(a)).toFixed(1)+'" height="'+plotH+'" fill="rgba(52,211,153,.12)" stroke="rgba(52,211,153,.45)"/>';}}
  if(hoverIdx!=null&&hoverIdx>=i0&&hoverIdx<=i1){const hx=xAt(hoverIdx).toFixed(1);s+='<line x1="'+hx+'" x2="'+hx+'" y1="'+plotTop+'" y2="'+plotBottom+'" stroke="rgba(226,232,240,.3)" stroke-dasharray="3 4"/>';
-   SR.forEach(se=>{const v=se.data[hoverIdx];if(v==null)return;const y=(se.axis==="L"?yL(v):yR(v)).toFixed(1);s+='<circle cx="'+hx+'" cy="'+y+'" r="4.5" fill="'+se.color+'" stroke="#080D1A" stroke-width="2.5"/>';});}
+   s+='<g clip-path="url(#plotclip)">';SR.forEach(se=>{const v=se.data[hoverIdx];if(v==null)return;const y=(se.axis==="L"?yL(v):yR(v)).toFixed(1);s+='<circle cx="'+hx+'" cy="'+y+'" r="4.5" fill="'+se.color+'" stroke="#080D1A" stroke-width="2.5"/>';});s+='</g>';}
  s+='</svg>';
  document.getElementById("svghost").innerHTML=s;
  const zp=document.getElementById("zpill");zp.innerHTML=(domF[0]>0.001||domF[1]<0.999)?'<span class="zpill" onclick="resetZoom()">ZOOMED · RESET</span>':"";
@@ -367,14 +373,16 @@ function showTip(clientX){
  const flip=hoverIdx>i0+(i1-i0)*0.6;tip.style.left=Math.min(Math.max((flip?px-tw-16:px+16),4),host.width-tw-4)+"px";tip.style.top="14px";
 }
 
-function idxFromX(clientX){const svg=document.getElementById("svg");if(!svg)return null;const r=svg.getBoundingClientRect();const sx=VW/r.width;const px=(clientX-r.left)*sx;const f=Math.max(0,Math.min(1,(px-plotLeft)/plotW));return Math.round(i0+f*(i1-i0));}
+function idxFromX(clientX){const svg=document.getElementById("svg");if(!svg)return null;const r=svg.getBoundingClientRect();if(!r.width)return null;const px=(clientX-r.left)*VW/r.width;const f=Math.max(0,Math.min(1,(px-plotLeft)/plotW));return Math.round(i0+f*(i1-i0));}
+function svgCoords(e){const svg=document.getElementById("svg");if(!svg)return null;const r=svg.getBoundingClientRect();if(!r.width||!r.height)return null;return{x:(e.clientX-r.left)*VW/r.width,y:(e.clientY-r.top)*VH/r.height};}
 function bindPlot(){const plot=document.getElementById("plot");
+ plot.ondblclick=e=>{const c=svgCoords(e);if(!c)return;if(c.x>plotRight){vf=[0,1];}else if(c.y>plotBottom){domF=[0,1];}else{domF=[0,1];vf=[0,1];}hoverIdx=null;render();persist();};
  plot.onmousemove=e=>{const idx=idxFromX(e.clientX);if(idx==null)return;hoverIdx=idx;if(dragging)dragB=idx;render();showTip(e.clientX);};
  plot.onmousedown=e=>{const idx=idxFromX(e.clientX);if(idx==null)return;dragging=true;dragA=idx;dragB=idx;document.getElementById("tip").style.display="none";render();};
  plot.onmouseup=()=>{if(dragging){const N=ND();const a=Math.min(dragA,dragB),b=Math.max(dragA,dragB);if((b-a)/(N-1)>0.03){domF=[a/(N-1),b/(N-1)];}dragging=false;render();persist();}};
  plot.onmouseleave=()=>{dragging=false;hoverIdx=null;render();document.getElementById("tip").style.display="none";};
 }
-function resetZoom(){domF=[0,1];hoverIdx=null;render();persist();}
+function resetZoom(){domF=[0,1];vf=[0,1];hoverIdx=null;render();persist();}
 
 function selrow(){const el=document.getElementById("selrow");el.innerHTML="";
  selCoins().forEach(c=>{const chip=document.createElement("button");chip.className="chip";chip.style.background=alpha(color(c),.14);chip.style.border="1px solid "+alpha(color(c),.55);chip.style.boxShadow="0 6px 20px "+alpha(color(c),.22);chip.style.color="#F4F7FB";
@@ -449,14 +457,15 @@ function statcards(){const el=document.getElementById("statcards");const c=prima
   +'<div class="scard"><div class="lbl">TYPICALLY BEST / WORST</div><div style="margin-top:12px"><div class="scrow"><span class="l"><span class="rdot" style="background:#34D399"></span>'+MON3[best.m]+'</span><span class="v" style="color:#34D399">'+(best.r>=0?"+":"")+best.r.toFixed(0)+'%</span></div><div class="scsep"></div><div class="scrow"><span class="l"><span class="rdot" style="background:#FB7185"></span>'+MON3[worst.m]+'</span><span class="v" style="color:#FB7185">'+(worst.r>=0?"+":"")+worst.r.toFixed(0)+'%</span></div></div></div>'
   +'<div class="scard"><div class="lbl">CLOSEST ANALOG</div><div style="margin-top:12px"><div class="scrow"><span class="l">Year</span><span class="v" style="color:#E2E8F0">'+(mm&&mm.year?mm.year.year+' <span style="color:#2DD4BF">'+P(mm.year.r)+'</span>':"—")+'</span></div><div class="scsep"></div><div class="scrow"><span class="l">Month</span><span class="v" style="color:#E2E8F0">'+(mm&&mm.month?MON3[curMonth()-1]+' '+mm.month.year+' <span style="color:#A5B4FC">'+P(mm.month.r)+'</span>':"—")+'</span></div></div></div>';
 }
-function encodeState(){const a=selCoins().join(",");const sh=(showNorm?1:0)+""+(showCur?1:0)+(showMatch?1:0)+(showMatchMonth?1:0);let q="a="+a+"&y="+lookback+"&sh="+sh+"&log="+(logScale?1:0);if(domF[0]>0.001||domF[1]<0.999)q+="&z="+domF[0].toFixed(3)+"-"+domF[1].toFixed(3);return q;}
+function encodeState(){const a=selCoins().join(",");const sh=(showNorm?1:0)+""+(showCur?1:0)+(showMatch?1:0)+(showMatchMonth?1:0);let q="a="+a+"&y="+lookback+"&sh="+sh+"&log="+(logScale?1:0);if(domF[0]>0.001||domF[1]<0.999)q+="&z="+domF[0].toFixed(3)+"-"+domF[1].toFixed(3);if(Math.abs(vf[0])>0.001||Math.abs(vf[1]-1)>0.001)q+="&v="+vf[0].toFixed(3)+":"+vf[1].toFixed(3);return q;}
 function persist(){const q=encodeState();try{history.replaceState(null,"","#"+q);}catch(e){}if(!embedMode){try{localStorage.setItem("si_state",q);}catch(e){}}}
 function applyState(q){const p={};q.split("&").forEach(kv=>{const i=kv.indexOf("=");if(i>0)p[kv.slice(0,i)]=decodeURIComponent(kv.slice(i+1));});
  if(p.a!=null){COINS.forEach(c=>sel[c]=false);p.a.split(",").filter(Boolean).forEach(c=>{if(COINS.indexOf(c)>=0)sel[c]=true;});if(!selCoins().length)sel[COINS[0]]=true;}
- if(p.y==="3"||p.y==="5"||p.y==="max")lookback=p.y;
+ if(p.y==="3"||p.y==="5"||p.y==="10"||p.y==="max")lookback=p.y;
  if(p.sh&&p.sh.length===4){showNorm=p.sh[0]==="1";showCur=p.sh[1]==="1";showMatch=p.sh[2]==="1";showMatchMonth=p.sh[3]==="1";}
  if(p.log!=null)logScale=p.log==="1";
  if(p.z){const m=p.z.split("-");if(m.length===2){const f0=parseFloat(m[0]),f1=parseFloat(m[1]);if(f0>=0&&f1<=1&&f1>f0){domF=[f0,f1];}}}
+ if(p.v){const m=p.v.split(":");if(m.length===2){const g0=parseFloat(m[0]),g1=parseFloat(m[1]);if(!isNaN(g0)&&!isNaN(g1)&&g1>g0){vf=[g0,g1];}}}
  if(p.e==="1")embedMode=true;}
 function exportPNG(){const svg=document.getElementById("svg");if(!svg)return;const NS="http://www.w3.org/2000/svg";const clone=svg.cloneNode(true);
  const bg=document.createElementNS(NS,"rect");bg.setAttribute("x",0);bg.setAttribute("y",0);bg.setAttribute("width",VW);bg.setAttribute("height",VH);bg.setAttribute("fill","#080D1A");clone.insertBefore(bg,clone.firstChild);
@@ -545,7 +554,7 @@ function cyBind(){const host=document.getElementById("cyhost");
  host.ondblclick=()=>{cyDom=[0,1];cyHover=null;cycles();};
 }
 function cyReset(){cyDom=[0,1];cyHover=null;cycles();}
-function lbSeg(){const el=document.getElementById("lbSeg");const opts=[["3","3"],["5","5"],["max","Max"]];el.innerHTML="";opts.forEach(([v,lab])=>{const b=document.createElement("button");b.textContent=lab;if(lookback===v)b.className="on";b.onclick=()=>{lookback=v;for(const k in seaCache)delete seaCache[k];for(const k in metCache)delete metCache[k];redraw();};el.appendChild(b);});}
+function lbSeg(){const el=document.getElementById("lbSeg");const opts=[["3","3"],["5","5"],["10","10"],["max","Max"]];el.innerHTML="";opts.forEach(([v,lab])=>{const b=document.createElement("button");b.textContent=lab;if(lookback===v)b.className="on";b.onclick=()=>{lookback=v;for(const k in seaCache)delete seaCache[k];for(const k in metCache)delete metCache[k];redraw();};el.appendChild(b);});}
 function swatches(){const col=color(primary());document.getElementById("avgSw").style.borderBottom="2.5px solid "+col;document.getElementById("curSw").style.borderBottom="2.5px dotted "+lighten(col);}
 function togStyle(btn,on,col){if(on){btn.classList.add("on");btn.style.background=alpha(col,.14);btn.style.borderColor=alpha(col,.5);btn.style.color="#F4F7FB";}else{btn.classList.remove("on");btn.style.background="";btn.style.borderColor="";btn.style.color="";}}
 function toolbarState(){const col=color(primary());
@@ -578,9 +587,13 @@ function start(){COINS=M.coins;COINS.forEach((c,i)=>{sel[c]=(i===0);});
  document.getElementById("labsClose").onclick=closeLabs;
  document.getElementById("labsBack").onclick=closeLabs;
  document.addEventListener("keydown",e=>{if(e.key==="Escape"){closeShare();closeLabs();}});
- document.getElementById("resetAll").onclick=()=>{res="D";lookback="max";logScale=false;showNorm=true;showCur=true;showMatch=false;showMatchMonth=false;bq="";bcat="all";bsort="cap";domF=[0,1];hoverIdx=null;COINS.forEach((c,i)=>{sel[c]=(i===0);});redraw();};
+ document.getElementById("resetAll").onclick=()=>{res="D";lookback="max";logScale=false;showNorm=true;showCur=true;showMatch=false;showMatchMonth=false;bq="";bcat="all";bsort="cap";domF=[0,1];vf=[0,1];hoverIdx=null;COINS.forEach((c,i)=>{sel[c]=(i===0);});redraw();};
  window.addEventListener("mouseup",()=>{if(dragging){const N=ND();const a=Math.min(dragA,dragB),b=Math.max(dragA,dragB);if((b-a)/(N-1)>0.03){domF=[a/(N-1),b/(N-1)];}dragging=false;render();}cyCommit();});
  window.addEventListener("resize",()=>render());
+ document.getElementById("plot").addEventListener("wheel",e=>{if(!document.getElementById("svg"))return;e.preventDefault();const c=svgCoords(e);if(!c)return;
+  if(Math.abs(e.deltaX)>Math.abs(e.deltaY)*1.2){const span=domF[1]-domF[0];const d=e.deltaX/plotW*span;let f0=domF[0]+d,f1=domF[1]+d;if(f0<0){f1-=f0;f0=0;}if(f1>1){f0-=(f1-1);f1=1;}domF=[Math.max(0,f0),Math.min(1,f1)];}
+  else{const factor=Math.exp(e.deltaY*0.0016);const py=Math.max(plotTop,Math.min(plotBottom,c.y));const pfrac=(plotBottom-py)/plotH;const natY=vf[0]+pfrac*(vf[1]-vf[0]);let span=(vf[1]-vf[0])*factor;span=Math.max(0.02,Math.min(60,span));vf=[natY-pfrac*span,natY+(1-pfrac)*span];}
+  hoverIdx=null;render();},{passive:false});
  redraw();
 }
 fetch("data.json?t="+Date.now()).then(r=>r.json()).then(d=>{D=d;M=d._meta;start();}).catch(e=>{document.getElementById("status").textContent="Could not load data.json. Please try again later.";});
