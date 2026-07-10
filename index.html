@@ -226,7 +226,7 @@
   <div class="chartcard">
    <div class="chead">
     <div class="lft"><span class="ttl">SEASONAL PATTERN · JAN–DEC</span><span id="zpill"></span></div>
-    <span class="hint"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 3v4M12 17v4M3 12h4M17 12h4"></path><circle cx="12" cy="12" r="2.5"></circle></svg>Scroll or drag to zoom · double-click to reset</span>
+    <span class="hint"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 3v4M12 17v4M3 12h4M17 12h4"></path><circle cx="12" cy="12" r="2.5"></circle></svg>Scroll or drag to zoom · drag axis to rescale · double-click to reset</span>
    </div>
    <div id="plot"><div id="svghost"><div class="status" id="status">Loading data…</div></div><div id="tip"></div></div>
   </div>
@@ -281,7 +281,7 @@ let res="D";
 const ND=()=>res==="H"?M.H:M.Dn;
 const PERDAY=()=>res==="H"?24:1;
 let domF=[0,1];
-let hoverIdx=null, dragA=null, dragB=null, dragging=false, lastDown=0, lastDownX=0;
+let hoverIdx=null, dragA=null, dragB=null, dragging=false, lastDown=0, lastDownX=0, vdragging=false, vdragStartY=0, vdragBase=[0,1];
 let showNorm=true, showCur=true, showMatch=false, showMatchMonth=false, lookback="max", logScale=false;
 let browserOpen=true, bq="", bcat="all", bsort="cap", embedMode=false;
 const sel={}, seaCache={}, matchCache={}, metCache={};
@@ -357,7 +357,7 @@ function render(){
    s+='<g clip-path="url(#plotclip)">';SR.forEach(se=>{const v=se.data[hoverIdx];if(v==null)return;const y=(se.axis==="L"?yL(v):yR(v)).toFixed(1);s+='<circle cx="'+hx+'" cy="'+y+'" r="4.5" fill="'+se.color+'" stroke="#080D1A" stroke-width="2.5"/>';});s+='</g>';}
  s+='</svg>';
  document.getElementById("svghost").innerHTML=s;
- const zp=document.getElementById("zpill");zp.innerHTML=(domF[0]>0.001||domF[1]<0.999)?'<span class="zpill" onclick="resetZoom()">ZOOMED · RESET</span>':"";
+ const zp=document.getElementById("zpill");zp.innerHTML=(domF[0]>0.001||domF[1]<0.999||Math.abs(vf[0])>0.001||Math.abs(vf[1]-1)>0.001)?'<span class="zpill" onclick="resetZoom()">ZOOMED · RESET</span>':"";
 }
 
 function showTip(clientX){
@@ -377,10 +377,14 @@ function showTip(clientX){
 function idxFromX(clientX){const svg=document.getElementById("svg");if(!svg)return null;const r=svg.getBoundingClientRect();if(!r.width)return null;const px=(clientX-r.left)*VW/r.width;const f=Math.max(0,Math.min(1,(px-plotLeft)/plotW));return Math.round(i0+f*(i1-i0));}
 function svgCoords(e){const svg=document.getElementById("svg");if(!svg)return null;const r=svg.getBoundingClientRect();if(!r.width||!r.height)return null;return{x:(e.clientX-r.left)*VW/r.width,y:(e.clientY-r.top)*VH/r.height};}
 function bindPlot(){const plot=document.getElementById("plot");
- plot.onmousemove=e=>{const idx=idxFromX(e.clientX);if(idx==null)return;hoverIdx=idx;if(dragging)dragB=idx;render();showTip(e.clientX);};
+ plot.onmousemove=e=>{if(vdragging)return;const c=svgCoords(e);
+   if(c&&c.x>plotRight&&!dragging){plot.style.cursor="ns-resize";if(hoverIdx!=null){hoverIdx=null;render();}document.getElementById("tip").style.display="none";return;}
+   plot.style.cursor="";const idx=idxFromX(e.clientX);if(idx==null)return;hoverIdx=idx;if(dragging)dragB=idx;render();showTip(e.clientX);};
  plot.onmousedown=e=>{
-   if(e.timeStamp-lastDown<350&&Math.abs(e.clientX-lastDownX)<8){domF=[0,1];vf=[0,1];dragging=false;hoverIdx=null;lastDown=0;render();persist();return;}
+   if(e.timeStamp-lastDown<350&&Math.abs(e.clientX-lastDownX)<8){domF=[0,1];vf=[0,1];dragging=false;vdragging=false;hoverIdx=null;lastDown=0;plot.style.cursor="";render();persist();return;}
    lastDown=e.timeStamp;lastDownX=e.clientX;
+   const c=svgCoords(e);
+   if(c&&c.x>plotRight){vdragging=true;vdragStartY=c.y;vdragBase=[vf[0],vf[1]];plot.style.cursor="ns-resize";document.getElementById("tip").style.display="none";return;}
    const idx=idxFromX(e.clientX);if(idx==null)return;
    dragging=true;dragA=idx;dragB=idx;document.getElementById("tip").style.display="none";};
  plot.onmouseup=()=>{if(dragging){const N=ND();const a=Math.min(dragA,dragB),b=Math.max(dragA,dragB);if((b-a)/(N-1)>0.03){domF=[a/(N-1),b/(N-1)];}dragging=false;render();persist();}};
@@ -469,7 +473,7 @@ function applyState(q){const p={};q.split("&").forEach(kv=>{const i=kv.indexOf("
  if(p.sh&&p.sh.length===4){showNorm=p.sh[0]==="1";showCur=p.sh[1]==="1";showMatch=p.sh[2]==="1";showMatchMonth=p.sh[3]==="1";}
  if(p.log!=null)logScale=p.log==="1";
  if(p.z){const m=p.z.split("-");if(m.length===2){const f0=parseFloat(m[0]),f1=parseFloat(m[1]);if(f0>=0&&f1<=1&&f1>f0){domF=[f0,f1];}}}
- if(p.v){const m=p.v.split(":");if(m.length===2){const g0=parseFloat(m[0]),g1=parseFloat(m[1]);if(!isNaN(g0)&&!isNaN(g1)&&g1>g0){vf=[g0,g1];}}}
+ if(p.v){const m=p.v.split(":");if(m.length===2){const g0=parseFloat(m[0]),g1=parseFloat(m[1]);if(isFinite(g0)&&isFinite(g1)&&g1>g0&&(g1-g0)<=60){vf=[g0,g1];}}}
  if(p.e==="1")embedMode=true;}
 function exportPNG(){const svg=document.getElementById("svg");if(!svg)return;const NS="http://www.w3.org/2000/svg";const clone=svg.cloneNode(true);
  const bg=document.createElementNS(NS,"rect");bg.setAttribute("x",0);bg.setAttribute("y",0);bg.setAttribute("width",VW);bg.setAttribute("height",VH);bg.setAttribute("fill","#080D1A");clone.insertBefore(bg,clone.firstChild);
@@ -507,7 +511,7 @@ function heatmap(){const el=document.getElementById("heatmap");if(!flags.heatmap
  h+='<div class="hmcell hmylab" style="color:var(--accent-bright)">AVG</div>'+avg.map(cell).join("");
  h+='</div>';el.innerHTML=h;}
 const CYCOL={"2012":"#64748B","2016":"#818CF8","2020":"#2DD4BF","2024":"#FB7E14"};
-let cyDom=[0,1],cyVf=[0,1],cyHover=null,cyDragA=null,cyDragB=null,cyDragging=false,cyI0=0,cyI1=0,cyLastDown=0,cyLastDownX=0;
+let cyDom=[0,1],cyVf=[0,1],cyHover=null,cyDragA=null,cyDragB=null,cyDragging=false,cyI0=0,cyI1=0,cyLastDown=0,cyLastDownX=0,cyVdragging=false,cyVdragStartY=0,cyVdragBase=[0,1];
 function cySvgCoords(e){const svg=document.getElementById("cysvg");if(!svg)return null;const r=svg.getBoundingClientRect();if(!r.width||!r.height)return null;return{x:(e.clientX-r.left)*CYW/r.width,y:(e.clientY-r.top)*CYH/r.height};}
 const CYW=1060,CYH=380,CYL=56,CYRp=18,CYT=18,CYB=32,cyPW=CYW-CYL-CYRp,cyPH=CYH-CYT-CYB;
 const cyLG=v=>Math.log(1+Math.max(-99,v)/100);
@@ -520,7 +524,7 @@ function cycles(){const el=document.getElementById("cycles");if(!flags.halving){
  const zoomed=(cyDom[0]>0.001||cyDom[1]<0.999||Math.abs(cyVf[0])>0.001||Math.abs(cyVf[1]-1)>0.001);
  el.innerHTML='<div class="cyh"><span style="display:flex;align-items:center;gap:10px"><span class="cyt">BTC · RETURN SINCE HALVING · LOG</span>'+(zoomed?'<span class="zpill" onclick="cyReset()">ZOOMED · RESET</span>':'')+'</span><div class="cyleg">'+leg+'</div></div>'
   +'<div class="cyplot"><div id="cyhost"></div><div id="cytip" class="cytip"></div></div>'
-  +'<div class="cynote">Cumulative % since each halving (Bitstamp data from 2012). '+C.list.filter(c=>!c.current).length+' full cycles + the current one (orange, ● = today · day '+C.today+'). Scroll or drag to zoom · double-click to reset · log scale.</div>';
+  +'<div class="cynote">Cumulative % since each halving (Bitstamp data from 2012). '+C.list.filter(c=>!c.current).length+' full cycles + the current one (orange, ● = today · day '+C.today+'). Scroll or drag to zoom · drag axis to rescale · double-click to reset · log scale.</div>';
  cyRender();cyBind();
 }
 function cyRender(){const C=D._cycles;if(!C)return;const N=C.days;
@@ -554,10 +558,14 @@ function cyTip(clientX){const tip=document.getElementById("cytip");const C=D._cy
 }
 function cyCommit(){if(!cyDragging)return;const N=D._cycles.days;const a=Math.min(cyDragA,cyDragB),b=Math.max(cyDragA,cyDragB);if((b-a)/(N-1)>0.02){cyDom=[a/(N-1),b/(N-1)];}cyDragging=false;cyHover=null;cycles();}
 function cyBind(){const host=document.getElementById("cyhost");
- host.onmousemove=e=>{const i=cyIdx(e.clientX);if(i==null)return;cyHover=i;if(cyDragging)cyDragB=i;cyRender();cyTip(e.clientX);};
+ host.onmousemove=e=>{if(cyVdragging)return;const c=cySvgCoords(e);
+   if(c&&c.x<CYL&&!cyDragging){host.style.cursor="ns-resize";if(cyHover!=null){cyHover=null;cyRender();}document.getElementById("cytip").style.display="none";return;}
+   host.style.cursor="";const i=cyIdx(e.clientX);if(i==null)return;cyHover=i;if(cyDragging)cyDragB=i;cyRender();cyTip(e.clientX);};
  host.onmousedown=e=>{
-   if(e.timeStamp-cyLastDown<350&&Math.abs(e.clientX-cyLastDownX)<8){cyDom=[0,1];cyVf=[0,1];cyDragging=false;cyHover=null;cyLastDown=0;cycles();return;}
+   if(e.timeStamp-cyLastDown<350&&Math.abs(e.clientX-cyLastDownX)<8){cyDom=[0,1];cyVf=[0,1];cyDragging=false;cyVdragging=false;cyHover=null;cyLastDown=0;host.style.cursor="";cycles();return;}
    cyLastDown=e.timeStamp;cyLastDownX=e.clientX;
+   const c=cySvgCoords(e);
+   if(c&&c.x<CYL){cyVdragging=true;cyVdragStartY=c.y;cyVdragBase=[cyVf[0],cyVf[1]];host.style.cursor="ns-resize";document.getElementById("cytip").style.display="none";return;}
    const i=cyIdx(e.clientX);if(i==null)return;cyDragging=true;cyDragA=i;cyDragB=i;document.getElementById("cytip").style.display="none";};
  host.onmouseup=cyCommit;
  host.onmouseleave=()=>{cyDragging=false;cyHover=null;cyRender();document.getElementById("cytip").style.display="none";};
@@ -602,7 +610,11 @@ function start(){COINS=M.coins;COINS.forEach((c,i)=>{sel[c]=(i===0);});
  document.getElementById("labsBack").onclick=closeLabs;
  document.addEventListener("keydown",e=>{if(e.key==="Escape"){closeShare();closeLabs();}});
  document.getElementById("resetAll").onclick=()=>{res="D";lookback="max";logScale=false;showNorm=true;showCur=true;showMatch=false;showMatchMonth=false;bq="";bcat="all";bsort="cap";domF=[0,1];vf=[0,1];hoverIdx=null;COINS.forEach((c,i)=>{sel[c]=(i===0);});redraw();};
- window.addEventListener("mouseup",()=>{if(dragging){const N=ND();const a=Math.min(dragA,dragB),b=Math.max(dragA,dragB);if((b-a)/(N-1)>0.03){domF=[a/(N-1),b/(N-1)];}dragging=false;render();}cyCommit();});
+ window.addEventListener("mousemove",e=>{
+   if(vdragging){if(e.buttons===0){vdragging=false;const p=document.getElementById("plot");if(p)p.style.cursor="";render();persist();return;}const c=svgCoords(e);if(!c)return;const factor=Math.exp(((c.y-vdragStartY)/plotH)*2.5);const mid=(vdragBase[0]+vdragBase[1])/2;const ns=Math.max(0.02,Math.min(60,(vdragBase[1]-vdragBase[0])*factor));vf=[mid-ns/2,mid+ns/2];render();}
+   else if(cyVdragging){if(e.buttons===0){cyVdragging=false;const h=document.getElementById("cyhost");if(h)h.style.cursor="";cycles();return;}const c=cySvgCoords(e);if(!c)return;const factor=Math.exp(((c.y-cyVdragStartY)/cyPH)*2.5);const mid=(cyVdragBase[0]+cyVdragBase[1])/2;const ns=Math.max(0.02,Math.min(60,(cyVdragBase[1]-cyVdragBase[0])*factor));cyVf=[mid-ns/2,mid+ns/2];cyRender();}});
+ window.addEventListener("blur",()=>{let ch=false;if(vdragging){vdragging=false;const p=document.getElementById("plot");if(p)p.style.cursor="";ch=true;}if(cyVdragging){cyVdragging=false;const h=document.getElementById("cyhost");if(h)h.style.cursor="";cycles();}dragging=false;cyDragging=false;if(ch){render();persist();}});
+ window.addEventListener("mouseup",()=>{if(vdragging){vdragging=false;const p=document.getElementById("plot");if(p)p.style.cursor="";render();persist();}else if(dragging){const N=ND();const a=Math.min(dragA,dragB),b=Math.max(dragA,dragB);if((b-a)/(N-1)>0.03){domF=[a/(N-1),b/(N-1)];}dragging=false;render();}if(cyVdragging){cyVdragging=false;const h=document.getElementById("cyhost");if(h)h.style.cursor="";cycles();}cyCommit();});
  window.addEventListener("resize",()=>render());
  document.getElementById("plot").addEventListener("wheel",e=>{if(!document.getElementById("svg"))return;e.preventDefault();const c=svgCoords(e);if(!c)return;const factor=Math.exp(e.deltaY*0.0016);
   if(Math.abs(e.deltaX)>Math.abs(e.deltaY)*1.2){const sp=domF[1]-domF[0];const d=e.deltaX/plotW*sp;let f0=domF[0]+d,f1=domF[1]+d;if(f0<0){f1-=f0;f0=0;}if(f1>1){f0-=(f1-1);f1=1;}domF=[Math.max(0,f0),Math.min(1,f1)];}
