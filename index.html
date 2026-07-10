@@ -1,5 +1,8 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Seasonal Index · Crypto</title>
 <link rel="icon" type="image/svg+xml" href="favicon.svg">
 <link rel="mask-icon" href="favicon.svg" color="#34D399">
@@ -19,10 +22,11 @@
  *{box-sizing:border-box}
  html,body{margin:0;background:var(--bg);color:var(--text);font-family:var(--sans);-webkit-font-smoothing:antialiased}
  a{color:var(--accent);text-decoration:none}
+ a:hover{color:var(--accent-bright)}
  input::placeholder{color:currentColor;opacity:.45}
  .aurora{position:relative;overflow:hidden;min-height:100vh}
  .glow{position:absolute;border-radius:50%;pointer-events:none;filter:blur(2px)}
- .g1{top:-170px;left:-120px;width:540px;height:540px;background:radial-gradient(circle,rgba(16,185,129,.26),transparent 68%);animation:floatA 20s ease-in-out infinite}
+ .g1{top:-170px;left:-120px;width:540px;height:540px;background:radial-gradient(circle,rgba(16,185,129,.12),transparent 68%);animation:floatA 20s ease-in-out infinite}
  .g2{top:-120px;right:-170px;width:470px;height:470px;background:radial-gradient(circle,rgba(45,212,191,.13),transparent 68%)}
  .g3{bottom:-240px;left:40%;width:600px;height:600px;background:radial-gradient(circle,rgba(99,102,241,.13),transparent 68%);animation:floatB 24s ease-in-out infinite}
  @keyframes floatA{0%,100%{transform:translate(0,0)}50%{transform:translate(26px,30px)}}
@@ -37,7 +41,7 @@
  .updated{display:flex;align-items:center;gap:8px;padding:8px 14px;border-radius:999px;background:rgba(148,163,184,.08);border:1px solid rgba(148,163,184,.14)}
  .updated .dot{width:6px;height:6px;border-radius:50%;background:var(--accent);box-shadow:0 0 8px var(--accent)}
  .updated span{font:600 11.5px var(--mono);color:var(--text2)}
- .toolbar{margin-top:20px;display:flex;flex-wrap:wrap;align-items:center;gap:12px 18px;padding:13px 16px;border-radius:18px;background:var(--glass-bg);border:1px solid var(--glass-bd);backdrop-filter:blur(14px)}
+ .toolbar{margin-top:20px;display:flex;flex-wrap:wrap;align-items:center;gap:10px 14px;padding:13px 16px;border-radius:18px;background:var(--glass-bg);border:1px solid var(--glass-bd);backdrop-filter:blur(14px)}
  .grp{display:flex;align-items:center;gap:9px}
  .lab{font:700 9.5px var(--mono);letter-spacing:.14em;color:var(--muted)}
  .seg{display:flex;padding:3px;border-radius:999px;background:rgba(148,163,184,.07);border:1px solid rgba(148,163,184,.13)}
@@ -48,7 +52,7 @@
  .tog .sw{display:inline-block;width:14px;height:0;vertical-align:middle}
  .logbtn{padding:6px 13px;border-radius:999px;border:1px solid rgba(148,163,184,.14);background:rgba(148,163,184,.06);color:var(--text2);cursor:pointer;font:700 11.5px var(--sans);transition:.15s}
  .logbtn.on{background:rgba(52,211,153,.14);border-color:rgba(52,211,153,.5);color:var(--text)}
- .actions{display:flex;align-items:center;gap:14px;margin-left:auto}
+ .actions{display:flex;align-items:center;flex-wrap:wrap;gap:12px 14px;margin-left:auto}
  .sep{width:1px;height:22px;background:rgba(148,163,184,.16)}
  .ghost{display:flex;align-items:center;gap:6px;font:600 11.5px var(--sans);color:var(--text2);background:none;border:none;cursor:pointer;transition:.15s}
  .ghost:hover{color:var(--text)}
@@ -94,7 +98,9 @@
  .tile .sub{margin-top:5px;font:600 10.5px var(--sans);color:rgba(148,163,184,.55);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
  .bfoot{margin-top:12px;display:flex;align-items:center;justify-content:space-between;font:700 9.5px var(--mono);letter-spacing:.06em;color:rgba(148,163,184,.42)}
  .empty{grid-column:1/-1;padding:22px;text-align:center;font:500 12px var(--sans);color:rgba(148,163,184,.5)}
- .subleg{margin-top:14px;display:flex;flex-direction:column;gap:6px}
+ .subleg{margin-top:16px;display:flex;flex-direction:column;gap:7px}
+ .sllead{display:flex;align-items:center;gap:7px;font:700 9.5px var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+ .sllead .ar{color:var(--accent);font-size:13px;line-height:1}
  .slrow{display:flex;flex-wrap:wrap;align-items:center;gap:7px 16px;font:600 11.5px var(--sans);color:var(--text2)}
  .slrow .nm{display:flex;align-items:center;gap:7px}
  .slrow .sd{width:9px;height:9px;border-radius:3px}
@@ -109,6 +115,9 @@
  .chead .ttl{font:800 10px var(--mono);letter-spacing:.16em;color:var(--muted)}
  .zpill{display:flex;align-items:center;gap:5px;padding:3px 9px;border-radius:999px;background:rgba(52,211,153,.14);border:1px solid rgba(52,211,153,.4);font:700 9.5px var(--mono);color:var(--accent-bright);cursor:pointer}
  .hint{display:flex;align-items:center;gap:6px;font:600 10.5px var(--sans);color:rgba(148,163,184,.5)}
+ .cheadr{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+ .chsh{display:flex;align-items:center;gap:6px;padding:6px 13px;border-radius:999px;border:1px solid rgba(52,211,153,.4);background:rgba(52,211,153,.1);color:var(--accent-bright);cursor:pointer;font:700 11px var(--sans);transition:.15s}
+ .chsh:hover{background:rgba(52,211,153,.16)}
  .crt{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
  .mini{padding:4px 10px;border-radius:999px;border:1px solid rgba(148,163,184,.16);background:rgba(148,163,184,.05);color:var(--text2);cursor:pointer;font:700 10px var(--mono);letter-spacing:.04em;transition:.15s}
  .mini:hover{color:var(--text);border-color:rgba(52,211,153,.4)}
@@ -123,7 +132,10 @@
  .mhd{display:flex;align-items:center;justify-content:space-between;font:800 15px var(--sans);color:var(--text)}
  .mx{background:none;border:none;color:var(--muted);font-size:16px;cursor:pointer;line-height:1;padding:2px 4px}
  .mx:hover{color:var(--text)}
- .mlab{margin:16px 0 7px;font:800 9.5px var(--mono);letter-spacing:.16em;color:var(--muted)}
+ .mlab{margin:0 0 9px;font:800 9.5px var(--mono);letter-spacing:.16em;color:var(--muted)}
+ .mcard{margin-top:12px;padding:14px;border-radius:14px;border:1px solid rgba(148,163,184,.12);background:rgba(148,163,184,.04)}
+ .mtitle{display:flex;align-items:center;gap:10px}
+ .micon{width:30px;height:30px;flex:none;border-radius:9px;display:flex;align-items:center;justify-content:center;background:rgba(52,211,153,.14);border:1px solid rgba(52,211,153,.4)}
  .linkrow{display:flex;gap:8px}
  .linkrow input{flex:1;min-width:0;padding:11px 12px;border-radius:10px;background:rgba(148,163,184,.08);border:1px solid rgba(148,163,184,.16);color:var(--text2);font:500 12px var(--mono);outline:none}
  .linkrow input:focus{border-color:rgba(52,211,153,.4)}
@@ -133,18 +145,32 @@
  .mbtn2{flex:1;min-width:150px;padding:12px 14px;border-radius:10px;border:1px solid rgba(148,163,184,.16);background:rgba(148,163,184,.06);color:var(--text);font:700 12px var(--sans);cursor:pointer;transition:.15s}
  .mbtn2:hover{border-color:rgba(52,211,153,.4);background:rgba(52,211,153,.08)}
  .mhint{margin-top:16px;font:500 11px/1.5 var(--sans);color:rgba(148,163,184,.5)}
+ #labsList{margin-top:18px}
  .switch{position:relative;width:40px;height:23px;border-radius:999px;background:rgba(148,163,184,.22);cursor:pointer;transition:.15s;flex:none}
  .switch.on{background:linear-gradient(135deg,#34D399,#14B8A6)}
  .switch .knob{position:absolute;top:2.5px;left:2.5px;width:18px;height:18px;border-radius:50%;background:#fff;transition:.15s}
  .switch.on .knob{left:19.5px}
- .labrow{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;padding:14px 0;border-bottom:1px solid rgba(148,163,184,.1)}
- .labrow:last-child{border-bottom:none}
+ .labrow{display:flex;align-items:center;gap:14px;padding:13px 14px;border-radius:16px;border:1px solid rgba(148,163,184,.12);background:rgba(148,163,184,.05);margin-bottom:10px;cursor:pointer;transition:.18s}
+ .labrow:last-child{margin-bottom:0}
+ .labrow:hover{border-color:rgba(52,211,153,.32);background:rgba(148,163,184,.085)}
+ .labrow.on{border-color:rgba(52,211,153,.45);background:rgba(52,211,153,.09);box-shadow:0 10px 30px rgba(20,184,166,.15)}
+ .labrow .ic{width:40px;height:40px;flex:none;border-radius:12px;display:flex;align-items:center;justify-content:center;background:rgba(148,163,184,.08);border:1px solid rgba(148,163,184,.14);transition:.18s}
+ .labrow.on .ic{background:rgba(52,211,153,.15);border-color:rgba(52,211,153,.4)}
+ .labrow .txt{flex:1;min-width:0}
  .labrow .lt{font:700 13px var(--sans);color:var(--text)}
  .labrow .ld{margin-top:4px;font:500 11.5px/1.5 var(--sans);color:rgba(148,163,184,.6)}
  .heatmap{margin-top:14px;padding:16px 18px;border-radius:20px;background:rgba(148,163,184,.05);border:1px solid rgba(148,163,184,.12);backdrop-filter:blur(14px);overflow-x:auto}
- .heatmap .hmt{font:800 10px var(--mono);letter-spacing:.16em;color:var(--muted);margin-bottom:12px}
- .hmgrid{display:grid;gap:3px;min-width:660px}
- .hmcell{padding:6px 3px;border-radius:5px;text-align:center;font:600 10px var(--mono);color:var(--text2)}
+ .heatmap .hmt{display:flex;align-items:center;gap:9px;font:800 10px var(--mono);letter-spacing:.16em;color:var(--text2);margin-bottom:14px}
+ .heatmap .hmdot{width:9px;height:9px;border-radius:50%;flex:none}
+ .hmgrid{display:grid;gap:4px;min-width:660px}
+ .hmcell{padding:7px 3px;border-radius:6px;text-align:center;font:700 10.5px var(--mono);color:var(--text2)}
+ .hmleg{margin-top:13px;display:flex;align-items:center;gap:9px 15px;flex-wrap:wrap;font:600 9.5px var(--mono);letter-spacing:.08em;color:rgba(148,163,184,.6)}
+ .hmleg .hmk{display:flex;align-items:center;gap:6px}
+ .hmleg .hmk i{width:11px;height:11px;border-radius:3px;display:inline-block}
+ .hmleg .hmk i.pos{background:rgba(52,211,153,.85)}
+ .hmleg .hmk i.neg{background:rgba(251,113,133,.85)}
+ .hmleg .hmgrad{width:118px;height:8px;border-radius:999px;background:linear-gradient(90deg,rgba(251,113,133,.75),rgba(148,163,184,.18),rgba(52,211,153,.8))}
+ .hmleg .hmgl{color:rgba(148,163,184,.45)}
  .hmhead{color:var(--muted);font-weight:700}
  .hmylab{text-align:left;padding-left:2px;color:var(--text);font-weight:700}
  .hmnote{font:600 12px var(--sans);color:var(--muted)}
@@ -189,13 +215,15 @@
  .scnote{grid-column:1/-1;padding:16px;border-radius:16px;background:rgba(148,163,184,.05);border:1px solid rgba(148,163,184,.12);font:600 12px var(--sans);color:var(--muted)}
  .foot{margin-top:16px;text-align:center;font:600 10.5px var(--mono);letter-spacing:.08em;color:rgba(148,163,184,.4)}
  .status{font:600 13px var(--mono);color:var(--muted);padding:60px 4px;text-align:center}
-</style></head><body>
+</style>
+</head>
+<body>
 <div class="aurora">
  <div class="glow g1"></div><div class="glow g2"></div><div class="glow g3"></div>
  <div class="wrap">
   <div class="head">
    <div class="brand">
-    <div class="logo"><svg width="22" height="22" viewBox="0 0 24 24"><rect x="5" y="8" width="4.4" height="9" rx="1.3" fill="#062B1F"></rect><rect x="6.5" y="4.5" width="1.4" height="15" rx="0.7" fill="#062B1F"></rect><rect x="14.6" y="10.5" width="4.4" height="7" rx="1.3" fill="#062B1F"></rect><rect x="16.1" y="7.2" width="1.4" height="13" rx="0.7" fill="#062B1F"></rect></svg></div>
+    <div class="logo"><svg width="23" height="23" viewBox="0 0 24 24" fill="none"><path d="M2.5 14.6C4.4 14.6 5.3 8.2 7.9 8.2C10.5 8.2 11 15.2 13.5 15.2C16 15.2 16.7 10.2 21.5 10.2" stroke="#062B1F" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"></path><circle cx="21.5" cy="10.2" r="2.05" fill="#062B1F"></circle></svg></div>
     <div><div class="eyebrow">CRYPTO</div><div class="title">Seasonal Index</div></div>
    </div>
    <div class="updated"><span class="dot"></span><span id="updated">Loading…</span></div>
@@ -209,48 +237,42 @@
      <button class="tog" id="syBtn"><span class="sw" style="border-bottom:2.5px dashed #2DD4BF"></span>Similar year</button>
      <button class="tog" id="smBtn"><span class="sw" style="border-bottom:2.5px dashed #A5B4FC"></span>Similar month</button>
    </div></div>
-   <button class="logbtn" id="logBtn">Log</button>
-   <div class="actions">
-    <div class="sep"></div>
-    <button class="ghost" id="zr"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"></path><path d="M3 3v5h5"></path></svg>Reset zoom</button>
-    <button class="ghost" id="resetAll">Defaults</button>
-    <button class="ghost" id="shareBtn"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><path d="M8.6 13.5l6.8 4M15.4 6.5l-6.8 4"></path></svg><span id="shareLbl">Share</span></button>
+   <div class="sep"></div><button class="ghost" id="resetAll">Defaults</button><div class="actions">
+    
+    
     <button class="ghost" id="labsBtn"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3h6M10 3v6.5L5 19a1.5 1.5 0 0 0 1.4 2h11.2a1.5 1.5 0 0 0 1.4-2l-5-9.5V3"></path><path d="M7.5 15h9"></path></svg>Labs</button>
    </div>
   </div>
 
-  <div class="selrow" id="selrow"></div>
   <div class="browser" id="browser"></div>
   <div class="subleg" id="subleg"></div>
 
   <div class="chartcard">
    <div class="chead">
-    <div class="lft"><span class="ttl">SEASONAL PATTERN · JAN–DEC</span><span id="zpill"></span></div>
-    <span class="hint"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 3v4M12 17v4M3 12h4M17 12h4"></path><circle cx="12" cy="12" r="2.5"></circle></svg>Scroll to zoom · drag to pan · drag axis to rescale · double-click to reset</span>
+    <div class="lft"><span class="ttl">SEASONAL PATTERN · JAN–DEC · LOG</span><span id="zpill"></span></div>
+    <div class="cheadr"><span class="hint"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 3v4M12 17v4M3 12h4M17 12h4"></path><circle cx="12" cy="12" r="2.5"></circle></svg>Scroll or drag to zoom · double-click resets</span><button class="chsh" id="shareBtn"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><path d="M8.6 13.5l6.8 4M15.4 6.5l-6.8 4"></path></svg><span id="shareLbl">Share</span></button></div>
    </div>
    <div id="plot"><div id="svghost"><div class="status" id="status">Loading data…</div></div><div id="tip"></div></div>
   </div>
 
   <div class="statcards" id="statcards"></div>
-  <div class="heatmap" id="heatmap" hidden></div>
-  <div class="cycles" id="cycles" hidden></div>
+  <div class="heatmap" id="heatmap" hidden="hidden"></div>
+  <div class="cycles" id="cycles" hidden="hidden"></div>
 
   <div class="foot">UPDATES ONCE A DAY · UTC+3</div>
  </div>
 
- <div class="modal" id="shareModal" hidden>
+ <div class="modal" id="shareModal" hidden="hidden">
   <div class="mback" id="shareBack"></div>
   <div class="mbox">
-   <div class="mhd"><span>Share this view</span><button class="mx" id="shareClose">✕</button></div>
-   <div class="mlab">Link — opens this exact chart</div>
-   <div class="linkrow"><input id="shareUrl" readonly value=""><button class="mbtn" id="copyLink">Copy link</button></div>
-   <div class="mlab">Image &amp; embed</div>
-   <div class="mrow2"><button class="mbtn2" id="dlPng">⬇  Download PNG</button><button class="mbtn2" id="copyEmbed">&lt;/&gt;  Copy embed code</button></div>
+   <div class="mhd"><span class="mtitle"><span class="micon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#5eead4" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><path d="M8.6 13.5l6.8 4M15.4 6.5l-6.8 4"></path></svg></span>Share this view</span><button class="mx" id="shareClose">✕</button></div>
+   <div class="mcard"><div class="mlab">Link — opens this exact chart</div><div class="linkrow"><input id="shareUrl" readonly="" value=""><button class="mbtn" id="copyLink">Copy link</button></div></div>
+   <div class="mcard"><div class="mlab">Image &amp; embed</div><div class="mrow2"><button class="mbtn2" id="dlPng">⬇  Download PNG</button><button class="mbtn2" id="copyEmbed">&lt;/&gt;  Copy embed code</button></div></div>
    <div class="mhint">The link and embed carry the selected assets, timeframe, years and toggles — anyone who opens it sees the same view.</div>
   </div>
  </div>
 
- <div class="modal" id="labsModal" hidden>
+ <div class="modal" id="labsModal" hidden="hidden">
   <div class="mback" id="labsBack"></div>
   <div class="mbox">
    <div class="mhd"><span>Experimental features</span><button class="mx" id="labsClose">✕</button></div>
@@ -260,8 +282,10 @@
  </div>
 </div>
 <script>
+window.resetZoom=resetZoom;window.cyReset=cyReset;
+
 let D,M,COINS;
-const PAL={BTC:"#FB7E14",ETH:"#818CF8",BNB:"#A3E635",SOL:"#A855F7",XRP:"#06B6D4",DOGE:"#EC4899",TRX:"#FB7185",LINK:"#3B82F6",BCH:"#22C55E",LTC:"#94A3B8",ZEC:"#FDE047",GRAM:"#3AA9E6",XAU:"#FFD24A",XAG:"#D6DCE6",HYPE:"#2DE1C2",LEO:"#6FCF97",ADA:"#4F9BFF",XLM:"#9AA7C7",HBAR:"#14B8A6",SUI:"#38BDF8",AVAX:"#FF5A5F",CRO:"#2E5BFF",SHIB:"#FF9F45",NEAR:"#00D9A3",UNI:"#FF6FB5",TAO:"#34D399",WLFI:"#D4A373",ASTER:"#B794F6",OKB:"#1FA2FF",ONDO:"#6C8CFF",DOT:"#E6007A",HTX:"#7B9CF0",XPT:"#D9DCE1",DXY:"#22D3EE",SPX:"#CBD5E1",NDX:"#A78BFA",WTI:"#F97316",HG:"#D08B5A"};
+const PAL={BTC:"#F5A524",ETH:"#818CF8",BNB:"#A3E635",SOL:"#A855F7",XRP:"#06B6D4",DOGE:"#EC4899",TRX:"#FB7185",LINK:"#3B82F6",BCH:"#22C55E",LTC:"#94A3B8",ZEC:"#FDE047",GRAM:"#3AA9E6",XAU:"#FFD24A",XAG:"#D6DCE6",HYPE:"#2DE1C2",LEO:"#6FCF97",ADA:"#4F9BFF",XLM:"#9AA7C7",HBAR:"#14B8A6",SUI:"#38BDF8",AVAX:"#FF5A5F",CRO:"#2E5BFF",SHIB:"#FF9F45",NEAR:"#00D9A3",UNI:"#FF6FB5",TAO:"#34D399",WLFI:"#D4A373",ASTER:"#B794F6",OKB:"#1FA2FF",ONDO:"#6C8CFF",DOT:"#E6007A",HTX:"#7B9CF0",XPT:"#D9DCE1",DXY:"#22D3EE",SPX:"#CBD5E1",NDX:"#A78BFA",WTI:"#F97316",HG:"#D08B5A"};
 const NAMES={BTC:"Bitcoin",ETH:"Ethereum",BNB:"BNB",XRP:"XRP",SOL:"Solana",TRX:"TRON",HYPE:"Hyperliquid",DOGE:"Dogecoin",LEO:"UNUS SED LEO",ZEC:"Zcash",ADA:"Cardano",XLM:"Stellar",LINK:"Chainlink",BCH:"Bitcoin Cash",GRAM:"Toncoin",LTC:"Litecoin",HBAR:"Hedera",SUI:"Sui",AVAX:"Avalanche",CRO:"Cronos",SHIB:"Shiba Inu",NEAR:"NEAR Protocol",UNI:"Uniswap",TAO:"Bittensor",WLFI:"World Liberty Fi",ASTER:"Aster",OKB:"OKB",ONDO:"Ondo",DOT:"Polkadot",HTX:"HTX",XAU:"Gold",XAG:"Silver",XPT:"Platinum",DXY:"US Dollar Index",SPX:"S&P 500",NDX:"Nasdaq 100",WTI:"Crude Oil",HG:"Copper"};
 const CAT={BTC:"l1",ETH:"l1",BNB:"l1",XRP:"pay",SOL:"l1",TRX:"l1",HYPE:"defi",DOGE:"meme",LEO:"cex",ZEC:"priv",ADA:"l1",XLM:"pay",LINK:"defi",BCH:"pay",GRAM:"l1",LTC:"pay",HBAR:"l1",SUI:"l1",AVAX:"l1",CRO:"cex",SHIB:"meme",NEAR:"l1",UNI:"defi",TAO:"l1",WLFI:"defi",ASTER:"defi",OKB:"cex",ONDO:"defi",DOT:"l1",HTX:"cex",XAU:"metal",XAG:"metal",XPT:"metal",DXY:"macro",SPX:"macro",NDX:"macro",WTI:"macro",HG:"macro"};
 const CATLABELS=[["all","All"],["l1","Layer 1"],["defi","DeFi"],["meme","Meme"],["cex","Exchange"],["pay","Payments"],["priv","Privacy"],["metal","Metals"],["macro","Macro"]];
@@ -282,7 +306,7 @@ const ND=()=>res==="H"?M.H:M.Dn;
 const PERDAY=()=>res==="H"?24:1;
 let domF=[0,1];
 let hoverIdx=null, panning=false, panStartX=0, panStartY=0, panBaseDom=[0,1], panBaseVf=[0,1], lastDown=0, lastDownX=0, vdragging=false, vdragStartY=0, vdragBase=[0,1];
-let showNorm=true, showCur=true, showMatch=false, showMatchMonth=false, lookback="max", logScale=false;
+let showNorm=true, showCur=true, showMatch=false, showMatchMonth=false, lookback="max", logScale=true;
 let browserOpen=true, bq="", bcat="all", bsort="cap", embedMode=false;
 const sel={}, seaCache={}, matchCache={}, metCache={};
 
@@ -391,7 +415,7 @@ function bindPlot(){const plot=document.getElementById("plot");
 function resetZoom(){domF=[0,1];vf=[0,1];hoverIdx=null;render();persist();}
 
 function selrow(){const el=document.getElementById("selrow");el.innerHTML="";
- selCoins().forEach(c=>{const chip=document.createElement("button");chip.className="chip";chip.style.background=alpha(color(c),.14);chip.style.border="1px solid "+alpha(color(c),.55);chip.style.boxShadow="0 6px 20px "+alpha(color(c),.22);chip.style.color="#F4F7FB";
+ selCoins().forEach(c=>{const chip=document.createElement("button");chip.className="chip";chip.style.background="rgba(148,163,184,.06)";chip.style.border="1px solid rgba(148,163,184,.16)";chip.style.boxShadow="none";chip.style.color="#E2E8F0";
    let d="";const dv=deltaOf(c);if(dv!=null)d=' <span class="d" style="color:'+(dv>=0?"#34D399":"#FB7185")+'">'+(dv>=0?"+":"")+dv.toFixed(0)+'%</span>';
    chip.innerHTML='<span class="dot" style="background:'+color(c)+'"></span>'+c+' <span class="yr">'+years(c)+'y</span>'+d+' <span class="x">✕</span>';
    chip.onclick=()=>{sel[c]=false;redraw();};el.appendChild(chip);});}
@@ -487,8 +511,9 @@ const FLAGS=[{key:"heatmap",label:"Monthly return heatmap",desc:"A year × month
 let flags={};
 function loadFlags(){try{flags=JSON.parse(localStorage.getItem("si_flags"))||{};}catch(e){flags={};}FLAGS.forEach(f=>{if(typeof flags[f.key]!=="boolean")flags[f.key]=false;});}
 function saveFlags(){try{localStorage.setItem("si_flags",JSON.stringify(flags));}catch(e){}}
-function renderLabs(){const el=document.getElementById("labsList");el.innerHTML=FLAGS.map(f=>'<div class="labrow"><div><div class="lt">'+f.label+'</div><div class="ld">'+f.desc+'</div></div><div class="switch'+(flags[f.key]?" on":"")+'" data-flag="'+f.key+'"><div class="knob"></div></div></div>').join("");
- el.querySelectorAll(".switch").forEach(s=>s.onclick=()=>{const k=s.getAttribute("data-flag");flags[k]=!flags[k];saveFlags();renderLabs();redraw();});}
+function renderLabs(){const el=document.getElementById("labsList");const IC={heatmap:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none"><rect x="3" y="3" width="7" height="7" rx="1.6" fill="#34D399" opacity=".92"></rect><rect x="14" y="3" width="7" height="7" rx="1.6" fill="#2DD4BF" opacity=".5"></rect><rect x="3" y="14" width="7" height="7" rx="1.6" fill="#FB7185" opacity=".7"></rect><rect x="14" y="14" width="7" height="7" rx="1.6" fill="#34D399" opacity=".38"></rect></svg>',halving:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M3 16c3 0 3-9 6-9s3 6 6 6 3-6 6-6" stroke="#FB7E14" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"></path><circle cx="21" cy="7" r="1.9" fill="#FB7E14"></circle></svg>'};
+ el.innerHTML=FLAGS.map(f=>'<div class="labrow'+(flags[f.key]?" on":"")+'" data-flag="'+f.key+'"><div class="ic">'+(IC[f.key]||"")+'</div><div class="txt"><div class="lt">'+f.label+'</div><div class="ld">'+f.desc+'</div></div><div class="switch'+(flags[f.key]?" on":"")+'"><div class="knob"></div></div></div>').join("");
+ el.querySelectorAll(".labrow").forEach(r=>r.onclick=()=>{const k=r.getAttribute("data-flag");flags[k]=!flags[k];saveFlags();renderLabs();redraw();});}
 function openLabs(){renderLabs();document.getElementById("labsModal").hidden=false;}
 function closeLabs(){document.getElementById("labsModal").hidden=true;}
 function heatmap(){const el=document.getElementById("heatmap");if(!flags.heatmap){el.hidden=true;el.innerHTML="";return;}el.hidden=false;
@@ -502,13 +527,13 @@ function heatmap(){const el=document.getElementById("heatmap");if(!flags.heatmap
  const cm=cret(D[c].cur||[]);if(cm.some(v=>v!=null))rows.push({label:String(curYear),vals:cm,cur:true});
  const avg=MON.map((_,m)=>{let s=0,n=0;rows.forEach(r=>{if(r.cur)return;const v=r.vals[m];if(v!=null){s+=v;n++;}});return n?s/n:null;});
  let mx=0;rows.forEach(r=>r.vals.forEach(v=>{if(v!=null)mx=Math.max(mx,Math.abs(v));}));avg.forEach(v=>{if(v!=null)mx=Math.max(mx,Math.abs(v));});
- const cell=v=>{if(v==null)return '<div class="hmcell" style="background:rgba(148,163,184,.05);color:rgba(148,163,184,.35)">·</div>';const t=Math.min(1,Math.abs(v)/(mx||1));const a=(0.1+t*0.82).toFixed(2);const col=v>=0?"52,211,153":"251,113,133";return '<div class="hmcell" style="background:rgba('+col+','+a+');color:'+(t>0.5?"#0b1220":"var(--text2)")+'">'+(v>=0?"+":"")+Math.round(v)+'</div>';};
- let h='<div class="hmt">MONTHLY RETURN % · '+c+' · '+(NAMES[c]||c)+'</div><div class="hmgrid" style="grid-template-columns:52px repeat(12,1fr)">';
+ const cell=v=>{if(v==null)return '<div class="hmcell" style="background:rgba(148,163,184,.04);color:rgba(148,163,184,.28)">·</div>';const t=Math.min(1,Math.abs(v)/(mx||1));const a=(0.32+t*0.56).toFixed(2);const rgb=v>=0?"52,211,153":"251,113,133";const txt=t>0.42?(v>=0?"#04120c":"#1b0407"):"#EDF2F8";return '<div class="hmcell" style="background:rgba('+rgb+','+a+');color:'+txt+'">'+(v>=0?"+":"")+Math.round(v)+'%</div>';};
+ let h='<div class="hmt"><span class="hmdot" style="background:'+color(c)+';box-shadow:0 0 9px '+color(c)+'"></span>MONTHLY RETURN % · '+c+' · '+(NAMES[c]||c)+'</div><div class="hmgrid" style="grid-template-columns:52px repeat(12,1fr)">';
  h+='<div class="hmcell hmhead"></div>'+MON.map(m=>'<div class="hmcell hmhead">'+m+'</div>').join("");
- rows.forEach(r=>{h+='<div class="hmcell hmylab">'+r.label+'</div>'+r.vals.map(cell).join("");});
+ rows.forEach(r=>{h+='<div class="hmcell hmylab"'+(r.cur?' style="color:var(--accent-bright)"':'')+'>'+r.label+(r.cur?' •':'')+'</div>'+r.vals.map(cell).join("");});
  h+='<div class="hmcell hmylab" style="color:var(--accent-bright)">AVG</div>'+avg.map(cell).join("");
  h+='</div>';el.innerHTML=h;}
-const CYCOL={"2012":"#64748B","2016":"#818CF8","2020":"#2DD4BF","2024":"#FB7E14"};
+const CYCOL={"2012":"#9AA7C2","2016":"#818CF8","2020":"#2DD4BF","2024":"#F5A524"};
 let cyDom=[0,1],cyVf=[0,1],cyHover=null,cyI0=0,cyI1=0,cyLastDown=0,cyLastDownX=0,cyVdragging=false,cyVdragStartY=0,cyVdragBase=[0,1],cyPanning=false,cyPanStartX=0,cyPanStartY=0,cyPanBaseDom=[0,1],cyPanBaseVf=[0,1];
 function cySvgCoords(e){const svg=document.getElementById("cysvg");if(!svg)return null;const r=svg.getBoundingClientRect();if(!r.width||!r.height)return null;return{x:(e.clientX-r.left)*CYW/r.width,y:(e.clientY-r.top)*CYH/r.height};}
 const CYW=1060,CYH=380,CYL=18,CYRp=56,CYT=18,CYB=32,cyPW=CYW-CYL-CYRp,cyPH=CYH-CYT-CYB,cyPlotR=CYW-CYRp;
@@ -522,7 +547,7 @@ function cycles(){const el=document.getElementById("cycles");if(!flags.halving){
  const zoomed=(cyDom[0]>0.001||cyDom[1]<0.999||Math.abs(cyVf[0])>0.001||Math.abs(cyVf[1]-1)>0.001);
  el.innerHTML='<div class="cyh"><span style="display:flex;align-items:center;gap:10px"><span class="cyt">BTC · RETURN SINCE HALVING · LOG</span>'+(zoomed?'<span class="zpill" onclick="cyReset()">ZOOMED · RESET</span>':'')+'</span><div class="cyleg">'+leg+'</div></div>'
   +'<div class="cyplot"><div id="cyhost"></div><div id="cytip" class="cytip"></div></div>'
-  +'<div class="cynote">Cumulative % since each halving (Bitstamp data from 2012). '+C.list.filter(c=>!c.current).length+' full cycles + the current one (orange, ● = today · day '+C.today+'). Scroll to zoom · drag to pan · drag axis to rescale · double-click to reset · log scale.</div>';
+  +'<div class="cynote">'+C.list.filter(c=>!c.current).length+' full halving cycles + the current one — gold ● marks today (day '+C.today+'). Scroll or drag to zoom.</div>';
  cyRender();cyBind();
 }
 function cyRender(){const C=D._cycles;if(!C)return;const N=C.days;
@@ -534,13 +559,13 @@ function cyRender(){const C=D._cycles;if(!C)return;const N=C.days;
  const pth=a=>{let s="",pen=false;for(let d=Math.floor(cyI0);d<=Math.ceil(cyI1);d++){const v=a[d];if(v==null){pen=false;continue;}s+=(pen?"L":"M")+cyXAt(d).toFixed(1)+" "+yAt(v).toFixed(1)+" ";pen=true;}return s.trim();};
  let s='<svg id="cysvg" viewBox="0 0 '+CYW+' '+CYH+'" style="width:100%;height:auto;display:block;overflow:visible" xmlns="http://www.w3.org/2000/svg">';
  s+='<defs><clipPath id="cyclip"><rect x="'+CYL+'" y="'+CYT+'" width="'+cyPW+'" height="'+cyPH+'"/></clipPath><filter id="cyglow" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="2" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>';
- [-90,-75,-50,0,50,100,200,300,500,1000,2000,3000,5000,8000].forEach(v=>{const t=cyLG(v);if(t<lo||t>hi)return;const y=yAt(v);if(y<CYT-0.5||y>cyBot+0.5)return;const yy=y.toFixed(1);s+='<line x1="'+CYL+'" x2="'+cyPlotR+'" y1="'+yy+'" y2="'+yy+'" stroke="rgba(148,163,184,.1)"/><text x="'+(cyPlotR+8)+'" y="'+(+yy+3.5)+'" fill="rgba(148,163,184,.5)" font-size="10.5" font-family="\'JetBrains Mono\',monospace">'+(v>=0?"+":"")+v+'%</text>';});
- for(let yr=0;yr<=4;yr++){const d=yr*365;if(d<cyI0||d>cyI1)continue;const x=cyXAt(d).toFixed(1);s+='<line x1="'+x+'" x2="'+x+'" y1="'+CYT+'" y2="'+cyBot+'" stroke="rgba(148,163,184,.07)"/><text x="'+x+'" y="'+(cyBot+18)+'" text-anchor="middle" fill="rgba(148,163,184,.5)" font-size="10.5" font-family="\'JetBrains Mono\',monospace">'+(yr===0?"Halving":"Yr "+yr)+'</text>';}
+ [-90,-75,-50,0,50,100,200,300,500,1000,2000,3000,5000,8000].forEach(v=>{const t=cyLG(v);if(t<lo||t>hi)return;const y=yAt(v);if(y<CYT-0.5||y>cyBot+0.5)return;const yy=y.toFixed(1);s+='<line x1="'+CYL+'" x2="'+cyPlotR+'" y1="'+yy+'" y2="'+yy+'" stroke="rgba(148,163,184,.16)"/><text x="'+(cyPlotR+8)+'" y="'+(+yy+3.5)+'" fill="rgba(148,163,184,.72)" font-size="10.5" font-family="\'JetBrains Mono\',monospace">'+(v>=0?"+":"")+v+'%</text>';});
+ for(let yr=0;yr<=4;yr++){const d=yr*365;if(d<cyI0||d>cyI1)continue;const x=cyXAt(d).toFixed(1);s+='<line x1="'+x+'" x2="'+x+'" y1="'+CYT+'" y2="'+cyBot+'" stroke="rgba(148,163,184,.12)"/><text x="'+x+'" y="'+(cyBot+18)+'" text-anchor="middle" fill="rgba(148,163,184,.72)" font-size="10.5" font-family="\'JetBrains Mono\',monospace">'+(yr===0?"Halving":"Yr "+yr)+'</text>';}
  s+='<g clip-path="url(#cyclip)">';
  if(C.avg){const d=pth(C.avg);if(d)s+='<path d="'+d+'" fill="none" stroke="#94A3B8" stroke-width="1.6" stroke-dasharray="5 4" opacity="0.8"/>';}
  C.list.forEach(c=>{const d=pth(c.path);if(!d)return;const col=CYCOL[c.label]||"#888";s+='<path d="'+d+'" fill="none" stroke="'+col+'" stroke-width="'+(c.current?3:1.8)+'" stroke-linecap="round" stroke-linejoin="round" opacity="'+(c.current?1:0.85)+'"'+(c.current?' filter="url(#cyglow)"':'')+'/>';});
  s+='</g>';
- const cc=C.list.find(c=>c.current);if(cc&&C.today>=cyI0&&C.today<=cyI1&&cc.path[C.today]!=null){const x=cyXAt(C.today);s+='<line x1="'+x.toFixed(1)+'" x2="'+x.toFixed(1)+'" y1="'+CYT+'" y2="'+cyBot+'" stroke="rgba(251,126,20,.4)" stroke-dasharray="3 4"/><g clip-path="url(#cyclip)"><circle cx="'+x.toFixed(1)+'" cy="'+yAt(cc.path[C.today]).toFixed(1)+'" r="4.5" fill="#FB7E14" stroke="#080D1A" stroke-width="2.5"/></g>';}
+ const cc=C.list.find(c=>c.current);if(cc&&C.today>=cyI0&&C.today<=cyI1&&cc.path[C.today]!=null){const x=cyXAt(C.today);s+='<g clip-path="url(#cyclip)"><circle cx="'+x.toFixed(1)+'" cy="'+yAt(cc.path[C.today]).toFixed(1)+'" r="4.5" fill="#F5A524" stroke="#080D1A" stroke-width="2.5"/></g>';}
  if(cyHover!=null&&cyHover>=cyI0&&cyHover<=cyI1){const hx=cyXAt(cyHover).toFixed(1);s+='<line x1="'+hx+'" x2="'+hx+'" y1="'+CYT+'" y2="'+cyBot+'" stroke="rgba(226,232,240,.3)" stroke-dasharray="3 4"/><g clip-path="url(#cyclip)">';C.list.forEach(c=>{const v=c.path[cyHover];if(v==null)return;s+='<circle cx="'+hx+'" cy="'+yAt(v).toFixed(1)+'" r="4" fill="'+(CYCOL[c.label]||"#888")+'" stroke="#080D1A" stroke-width="2"/>';});s+='</g>';}
  s+='</svg>';document.getElementById("cyhost").innerHTML=s;
 }
@@ -580,9 +605,9 @@ function toolbarState(){const col=color(primary());
  togStyle(document.getElementById("curBtn"),showCur,col);
  togStyle(document.getElementById("syBtn"),showMatch,"#2DD4BF");
  togStyle(document.getElementById("smBtn"),showMatchMonth,"#A5B4FC");
- document.getElementById("logBtn").classList.toggle("on",logScale);}
+}
 
-function redraw(){swatches();toolbarState();selrow();browser();subleg();statcards();heatmap();cycles();lbSeg();render();bindPlot();persist();}
+function redraw(){swatches();toolbarState();browser();subleg();statcards();heatmap();cycles();lbSeg();render();bindPlot();persist();}
 
 function start(){COINS=M.coins;COINS.forEach((c,i)=>{sel[c]=(i===0);});
  loadFlags();
@@ -593,8 +618,6 @@ function start(){COINS=M.coins;COINS.forEach((c,i)=>{sel[c]=(i===0);});
  document.getElementById("curBtn").onclick=()=>{showCur=!showCur;redraw();};
  document.getElementById("syBtn").onclick=()=>{showMatch=!showMatch;redraw();};
  document.getElementById("smBtn").onclick=()=>{showMatchMonth=!showMatchMonth;redraw();};
- document.getElementById("logBtn").onclick=()=>{logScale=!logScale;redraw();};
- document.getElementById("zr").onclick=resetZoom;
  document.getElementById("shareBtn").onclick=openShare;
  document.getElementById("shareClose").onclick=closeShare;
  document.getElementById("shareBack").onclick=closeShare;
@@ -605,7 +628,7 @@ function start(){COINS=M.coins;COINS.forEach((c,i)=>{sel[c]=(i===0);});
  document.getElementById("labsClose").onclick=closeLabs;
  document.getElementById("labsBack").onclick=closeLabs;
  document.addEventListener("keydown",e=>{if(e.key==="Escape"){closeShare();closeLabs();}});
- document.getElementById("resetAll").onclick=()=>{res="D";lookback="max";logScale=false;showNorm=true;showCur=true;showMatch=false;showMatchMonth=false;bq="";bcat="all";bsort="cap";domF=[0,1];vf=[0,1];hoverIdx=null;COINS.forEach((c,i)=>{sel[c]=(i===0);});redraw();};
+ document.getElementById("resetAll").onclick=()=>{res="D";lookback="max";logScale=true;showNorm=true;showCur=true;showMatch=false;showMatchMonth=false;bq="";bcat="all";bsort="cap";domF=[0,1];vf=[0,1];hoverIdx=null;COINS.forEach((c,i)=>{sel[c]=(i===0);});redraw();};
  window.addEventListener("mousemove",e=>{
    if(panning){if(e.buttons===0){panning=false;const p=document.getElementById("plot");if(p)p.style.cursor="";render();persist();return;}const c=svgCoords(e);if(!c)return;const hs=panBaseDom[1]-panBaseDom[0];let d0=panBaseDom[0]-((c.x-panStartX)/plotW)*hs,d1=d0+hs;if(d0<0){d1-=d0;d0=0;}if(d1>1){d0-=(d1-1);d1=1;}domF=[Math.max(0,d0),Math.min(1,d1)];const vs=panBaseVf[1]-panBaseVf[0];let v0=panBaseVf[0]+((c.y-panStartY)/plotH)*vs,v1=v0+vs;if(vs<=1){if(v0<0){v1-=v0;v0=0;}if(v1>1){v0-=(v1-1);v1=1;}}else{if(v0>0){v1-=v0;v0=0;}if(v1<1){v0+=(1-v1);v1=1;}}vf=[v0,v1];render();return;}
    if(vdragging){if(e.buttons===0){vdragging=false;const p=document.getElementById("plot");if(p)p.style.cursor="";render();persist();return;}const c=svgCoords(e);if(!c)return;const factor=Math.exp(((c.y-vdragStartY)/plotH)*2.5);const mid=(vdragBase[0]+vdragBase[1])/2;const ns=Math.max(0.02,Math.min(60,(vdragBase[1]-vdragBase[0])*factor));vf=[mid-ns/2,mid+ns/2];render();return;}
@@ -623,4 +646,5 @@ function start(){COINS=M.coins;COINS.forEach((c,i)=>{sel[c]=(i===0);});
 }
 fetch("data.json?t="+Date.now()).then(r=>r.json()).then(d=>{D=d;M=d._meta;start();}).catch(e=>{document.getElementById("status").textContent="Could not load data.json. Please try again later.";});
 </script>
-</body></html>
+</body>
+</html>
