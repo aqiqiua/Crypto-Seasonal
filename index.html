@@ -281,17 +281,17 @@ let res="D";
 const ND=()=>res==="H"?M.H:M.Dn;
 const PERDAY=()=>res==="H"?24:1;
 let domF=[0,1];
-let hoverIdx=null, dragA=null, dragB=null, dragging=false;
+let hoverIdx=null, dragA=null, dragB=null, dragging=false, lastDown=0, lastDownX=0;
 let showNorm=true, showCur=true, showMatch=false, showMatchMonth=false, lookback="max", logScale=false;
 let browserOpen=true, bq="", bcat="all", bsort="cap", embedMode=false;
 const sel={}, seaCache={}, matchCache={}, metCache={};
 
 const VW=1060,VH=470,padL=46,padR=58,padT=28,padB=40;
 const plotW=VW-padL-padR, plotH=VH-padT-padB, plotLeft=padL, plotTop=padT, plotBottom=padT+plotH, plotRight=padL+plotW;
-let i0=0,i1=0,rmin=0,rmax=1,vf=[0,1];
+let i0=0,i1=0,rmin=0,rmax=1,lmin=0,lmax=100,vf=[0,1];
 const xAt=i=>plotLeft+((i-i0)/((i1-i0)||1))*plotW;
 const natPix=n=>plotBottom-((n-vf[0])/((vf[1]-vf[0])||1))*plotH;
-const yL=v=>natPix(v/100);
+const yL=v=>natPix((v-lmin)/((lmax-lmin)||1));
 function rT(v){return logScale?Math.log(Math.max(1e-6,(100+v)/100)):v;}
 function rIT(t){return logScale?(Math.exp(t)-1)*100:t;}
 const yR=v=>natPix((rT(v)-rmin)/((rmax-rmin)||1));
@@ -331,17 +331,18 @@ function seriesList(){const a=[];COINS.forEach(c=>{if(!sel[c])return;
    if(showCur&&D[c].cur_h)a.push({coin:c,kind:"cur",axis:"R",data:D[c].cur_h,color:lighten(color(c)),w:2,dash:"1 5",op:.95});
  }});return a;}
 function rscale(list){let lo=Infinity,hi=-Infinity;list.forEach(s=>{if(s.axis!=="R")return;for(let i=i0;i<=i1;i++){const v=s.data[i];if(v==null)continue;const t=rT(v);if(t<lo)lo=t;if(t>hi)hi=t;}});const z=rT(0);if(lo===Infinity){lo=z-1;hi=z+1;}if(z<lo)lo=z;if(z>hi)hi=z;const p=(hi-lo)*0.10||0.5;rmin=lo-p;rmax=hi+p;}
+function lscale(list){let lo=Infinity,hi=-Infinity;list.forEach(s=>{if(s.axis!=="L")return;for(let i=i0;i<=i1;i++){const v=s.data[i];if(v==null)continue;if(v<lo)lo=v;if(v>hi)hi=v;}});if(lo===Infinity){lmin=0;lmax=100;return;}if(hi-lo<1){lo-=1;hi+=1;}lmin=lo;lmax=hi;}
 function pathOf(data,axis){let d="",pen=false;for(let i=Math.floor(i0);i<=Math.ceil(i1);i++){const v=data[i];if(v==null){pen=false;continue;}const x=xAt(i).toFixed(1),y=(axis==="L"?yL(v):yR(v)).toFixed(1);d+=(pen?"L":"M")+x+" "+y+" ";pen=true;}return d.trim();}
 
 function render(){
  const N=ND();i0=Math.round(domF[0]*(N-1));i1=Math.max(i0+1,Math.round(domF[1]*(N-1)));
- const SR=seriesList();rscale(SR);
+ const SR=seriesList();rscale(SR);lscale(SR);
  const selc=selCoins();const single=selc.length===1?selc[0]:null;
  let s='<svg id="svg" viewBox="0 0 '+VW+' '+VH+'" xmlns="http://www.w3.org/2000/svg">';
  s+='<defs><clipPath id="plotclip"><rect x="'+plotLeft+'" y="'+plotTop+'" width="'+plotW+'" height="'+plotH+'"/></clipPath>';
  if(single&&showNorm)s+='<linearGradient id="areaG" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="'+color(single)+'" stop-opacity="0.2"/><stop offset="1" stop-color="'+color(single)+'" stop-opacity="0"/></linearGradient>';
  s+='</defs>';
- for(let k=0;k<=4;k++){const p=k/4;const y=(plotBottom-p*plotH).toFixed(1);const nat=vf[0]+p*(vf[1]-vf[0]);const lv=nat*100;const rv=rIT(rmin+nat*(rmax-rmin));
+ for(let k=0;k<=4;k++){const p=k/4;const y=(plotBottom-p*plotH).toFixed(1);const nat=vf[0]+p*(vf[1]-vf[0]);const lv=lmin+nat*(lmax-lmin);const rv=rIT(rmin+nat*(rmax-rmin));
    s+='<line x1="'+plotLeft+'" x2="'+plotRight+'" y1="'+y+'" y2="'+y+'" stroke="rgba(148,163,184,.12)"/>';
    s+='<text x="'+(plotLeft-8)+'" y="'+(+y+3.5)+'" text-anchor="end" fill="rgba(148,163,184,.55)" font-size="11" font-family="\'JetBrains Mono\',monospace">'+(Math.abs(lv-Math.round(lv))<0.5?Math.round(lv):lv.toFixed(1))+'</text>';
    s+='<text x="'+(plotRight+8)+'" y="'+(+y+3.5)+'" fill="rgba(148,163,184,.5)" font-size="11" font-family="\'JetBrains Mono\',monospace">'+(rv>=0?"+":"")+rv.toFixed(0)+'%</text>';}
@@ -376,9 +377,10 @@ function showTip(clientX){
 function idxFromX(clientX){const svg=document.getElementById("svg");if(!svg)return null;const r=svg.getBoundingClientRect();if(!r.width)return null;const px=(clientX-r.left)*VW/r.width;const f=Math.max(0,Math.min(1,(px-plotLeft)/plotW));return Math.round(i0+f*(i1-i0));}
 function svgCoords(e){const svg=document.getElementById("svg");if(!svg)return null;const r=svg.getBoundingClientRect();if(!r.width||!r.height)return null;return{x:(e.clientX-r.left)*VW/r.width,y:(e.clientY-r.top)*VH/r.height};}
 function bindPlot(){const plot=document.getElementById("plot");
- plot.ondblclick=e=>{const c=svgCoords(e);if(!c)return;if(c.x>plotRight){vf=[0,1];}else if(c.y>plotBottom){domF=[0,1];}else{domF=[0,1];vf=[0,1];}hoverIdx=null;render();persist();};
  plot.onmousemove=e=>{const idx=idxFromX(e.clientX);if(idx==null)return;hoverIdx=idx;if(dragging)dragB=idx;render();showTip(e.clientX);};
- plot.onmousedown=e=>{const idx=idxFromX(e.clientX);if(idx==null)return;dragging=true;dragA=idx;dragB=idx;document.getElementById("tip").style.display="none";render();};
+ plot.onmousedown=e=>{const idx=idxFromX(e.clientX);if(idx==null)return;
+   if(e.timeStamp-lastDown<350&&Math.abs(e.clientX-lastDownX)<8){const c=svgCoords(e);if(c&&c.x>plotRight){vf=[0,1];}else if(c&&c.y>plotBottom){domF=[0,1];}else{domF=[0,1];vf=[0,1];}dragging=false;hoverIdx=null;lastDown=0;render();persist();return;}
+   lastDown=e.timeStamp;lastDownX=e.clientX;dragging=true;dragA=idx;dragB=idx;document.getElementById("tip").style.display="none";};
  plot.onmouseup=()=>{if(dragging){const N=ND();const a=Math.min(dragA,dragB),b=Math.max(dragA,dragB);if((b-a)/(N-1)>0.03){domF=[a/(N-1),b/(N-1)];}dragging=false;render();persist();}};
  plot.onmouseleave=()=>{dragging=false;hoverIdx=null;render();document.getElementById("tip").style.display="none";};
 }
@@ -590,9 +592,10 @@ function start(){COINS=M.coins;COINS.forEach((c,i)=>{sel[c]=(i===0);});
  document.getElementById("resetAll").onclick=()=>{res="D";lookback="max";logScale=false;showNorm=true;showCur=true;showMatch=false;showMatchMonth=false;bq="";bcat="all";bsort="cap";domF=[0,1];vf=[0,1];hoverIdx=null;COINS.forEach((c,i)=>{sel[c]=(i===0);});redraw();};
  window.addEventListener("mouseup",()=>{if(dragging){const N=ND();const a=Math.min(dragA,dragB),b=Math.max(dragA,dragB);if((b-a)/(N-1)>0.03){domF=[a/(N-1),b/(N-1)];}dragging=false;render();}cyCommit();});
  window.addEventListener("resize",()=>render());
- document.getElementById("plot").addEventListener("wheel",e=>{if(!document.getElementById("svg"))return;e.preventDefault();const c=svgCoords(e);if(!c)return;
-  if(Math.abs(e.deltaX)>Math.abs(e.deltaY)*1.2){const span=domF[1]-domF[0];const d=e.deltaX/plotW*span;let f0=domF[0]+d,f1=domF[1]+d;if(f0<0){f1-=f0;f0=0;}if(f1>1){f0-=(f1-1);f1=1;}domF=[Math.max(0,f0),Math.min(1,f1)];}
-  else{const factor=Math.exp(e.deltaY*0.0016);const py=Math.max(plotTop,Math.min(plotBottom,c.y));const pfrac=(plotBottom-py)/plotH;const natY=vf[0]+pfrac*(vf[1]-vf[0]);let span=(vf[1]-vf[0])*factor;span=Math.max(0.02,Math.min(60,span));vf=[natY-pfrac*span,natY+(1-pfrac)*span];}
+ document.getElementById("plot").addEventListener("wheel",e=>{if(!document.getElementById("svg"))return;e.preventDefault();const c=svgCoords(e);if(!c)return;const factor=Math.exp(e.deltaY*0.0016);
+  if(Math.abs(e.deltaX)>Math.abs(e.deltaY)*1.2){const sp=domF[1]-domF[0];const d=e.deltaX/plotW*sp;let f0=domF[0]+d,f1=domF[1]+d;if(f0<0){f1-=f0;f0=0;}if(f1>1){f0-=(f1-1);f1=1;}domF=[Math.max(0,f0),Math.min(1,f1)];}
+  else if(c.x>plotRight){const sp=vf[1]-vf[0];const py=Math.max(0,Math.min(1,(plotBottom-c.y)/plotH));const natY=vf[0]+py*sp;let ns=Math.max(0.02,Math.min(60,sp*factor));vf=[natY-py*ns,natY+(1-py)*ns];}
+  else{const sp=domF[1]-domF[0];const px=Math.max(0,Math.min(1,(c.x-plotLeft)/plotW));const abs=domF[0]+px*sp;let ns=Math.min(1,Math.max(0.008,sp*factor));let f0=abs-px*ns,f1=f0+ns;if(f0<0){f1-=f0;f0=0;}if(f1>1){f0-=(f1-1);f1=1;}domF=[Math.max(0,f0),Math.min(1,f1)];}
   hoverIdx=null;render();},{passive:false});
  redraw();
 }
