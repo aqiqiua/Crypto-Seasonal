@@ -52,7 +52,8 @@ COINS = {                  # name -> (symbol, color, source)   [top-50 by market
     "WTI":  ("CL=F",     "#F97316", "yahoo"),
     "HG":   ("HG=F",     "#D08B5A", "yahoo"),
 }
-METAL_FIRST_YEAR = 1990    # don't go absurdly far back for metals
+METAL_FIRST_YEAR = 1970    # metals/macro: use full source history
+DEEP_FIRST_YEAR = 2011     # crypto floor once deep sources (Yahoo/Bitstamp) are merged in
 CG = {"BTC":"bitcoin","ETH":"ethereum","BNB":"binancecoin","XRP":"ripple","SOL":"solana",
       "TRX":"tron","HYPE":"hyperliquid","DOGE":"dogecoin","LEO":"leo-token","ZEC":"zcash",
       "ADA":"cardano","XLM":"stellar","LINK":"chainlink","BCH":"bitcoin-cash",
@@ -260,6 +261,53 @@ def market_cap_order(names):
     order = cryptos + metals
     print("order:", order); return order, caps
 
+def _first_ms(rows):
+    return min((t for t, _ in rows), default=None)
+
+def _last_ms(rows):
+    return max((t for t, _ in rows), default=None)
+
+def _daycorr(a, b):
+    """log-return correlation of two daily series over overlapping days (0..1); low => different asset."""
+    da = {t // 86400000: c for t, c in a if c > 0}
+    db = {t // 86400000: c for t, c in b if c > 0}
+    common = sorted(set(da) & set(db))
+    if len(common) < 61: return 0.0
+    ra = np.diff(np.log(np.array([da[d] for d in common])))
+    rb = np.diff(np.log(np.array([db[d] for d in common])))
+    if ra.std() == 0 or rb.std() == 0: return 0.0
+    return float(np.corrcoef(ra, rb)[0, 1])
+
+def exch_daily(sym, src, this_year):
+    fetch = {"binance": fetch_binance, "bybit": fetch_bybit, "okx": fetch_okx}.get(src, fetch_binance)
+    rows = []
+    for y in range(FIRST_YEAR, this_year + 1):
+        rows += fetch(sym, dt.datetime(y, 1, 1), dt.datetime(y + 1, 1, 1, 3))
+    if not rows and src != "binance":
+        fb = sym.replace("-", "")
+        for y in range(FIRST_YEAR, this_year + 1):
+            rows += fetch_binance(fb, dt.datetime(y, 1, 1), dt.datetime(y + 1, 1, 1, 3))
+    return rows
+
+def deepest_crypto(name, sym, src, this_year):
+    """Deepest daily source, validated against the exchange anchor by return-correlation (rejects
+    same-ticker collisions like Yahoo's old UNI/SUI/HYPE). Returns (rows, source_tag)."""
+    anchor = exch_daily(sym, src, this_year)
+    best, best_ms, tag = anchor, _first_ms(anchor), src
+    anchor_last = _last_ms(anchor)
+    cands = [("yahoo", fetch_yahoo(name + "-USD"))]
+    if name == "BTC":
+        cands.append(("bitstamp", fetch_bitstamp_daily()))
+    for cname, cand in cands:
+        if not cand: continue
+        cms = _first_ms(cand)
+        if cms is None or (best_ms is not None and cms >= best_ms): continue          # not deeper
+        if anchor_last is not None and (_last_ms(cand) or 0) < anchor_last - 10 * 86400000:
+            continue                                                                  # deep source lags live exchange -> keep anchor
+        if (anchor and _daycorr(cand, anchor) >= 0.90) or (not anchor and cname == "bitstamp"):
+            best, best_ms, tag = cand, cms, cname
+    return best, tag
+
 def main():
     now_local = dt.datetime.now(dt.timezone.utc).replace(tzinfo=None) + dt.timedelta(hours=TZ)
     this_year = now_local.year
@@ -268,21 +316,15 @@ def main():
     for name, (sym, color, src) in COINS.items():
         if src in ("yahoo", "stooq"):
             rows = fetch_yahoo(sym) if src == "yahoo" else fetch_stooq(sym); fy = METAL_FIRST_YEAR
+            tag = src
         else:
-            fetch = FETCH.get(src, fetch_binance); rows = []; fy = FIRST_YEAR
-            for y in range(FIRST_YEAR, this_year + 1):
-                rows += fetch(sym, dt.datetime(y, 1, 1), dt.datetime(y + 1, 1, 1, 3))
-            if not rows:
-                fb = sym.replace("-", "")
-                print(f"  {name}: {src} empty -> fallback Binance {fb}")
-                for y in range(FIRST_YEAR, this_year + 1):
-                    rows += fetch_binance(fb, dt.datetime(y, 1, 1), dt.datetime(y + 1, 1, 1, 3))
+            rows, tag = deepest_crypto(name, sym, src, this_year); fy = DEEP_FIRST_YEAR
         years, cur, yrs = daily_years(rows, this_year, fy)
         if len(yrs) < MIN_YEARS:
-            print(f"{name} [{src}]: {len(yrs)}-Yr < {MIN_YEARS}, skipped"); continue
+            print(f"{name} [{tag}]: {len(yrs)}-Yr < {MIN_YEARS}, skipped"); continue
         out[name] = {"color": color, "yrs": yrs, "years": {str(y): years[y] for y in yrs},
                      "cur": cur, "daily": src == "stooq", "metal": src in ("yahoo", "stooq")}
-        print(f"{name} [{src}]: {yrs[0]}-{yrs[-1]} ({len(yrs)}-Yr)  rows={len(rows)}")
+        print(f"{name} [{tag}]: {yrs[0]}-{yrs[-1]} ({len(yrs)}-Yr)  rows={len(rows)}")
     order, caps = market_cap_order([n for n in COINS if n in out])
     for name in out:
         out[name]["mcap"] = caps.get(name, 0)
@@ -297,7 +339,7 @@ def main():
     out["_meta"] = {"tz": "UTC+3", "H": HRS, "Dn": DAYS, "coins": order,
                     "today_h": round(frac * (HRS - 1)), "today_d": round(frac * (DAYS - 1)),
                     "asof": f"{now_local.day} {months[now_local.month]} {now_local.year}"}
-    json.dump(out, open("data.json", "w"), separators=(",", ":"), ensure_ascii=False)
+    json.dump(out, open("data.json", "w"), separators=(",", ":"), ensure_ascii=False, allow_nan=False)
     print("wrote data.json")
 
 if __name__ == "__main__":

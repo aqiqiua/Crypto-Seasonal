@@ -155,6 +155,15 @@
  .cyleg .li{display:flex;align-items:center;gap:6px}
  .cyleg .sw{display:inline-block;width:15px;height:0;border-bottom:2.5px solid}
  .cynote{margin-top:10px;font:500 11px/1.5 var(--sans);color:rgba(148,163,184,.5)}
+ .cyplot{position:relative;width:100%}
+ #cysvg{cursor:crosshair}
+ .cytip{position:absolute;display:none;pointer-events:none;z-index:5;min-width:150px;padding:10px 12px;border-radius:12px;background:rgba(12,18,32,.9);border:1px solid rgba(148,163,184,.2);backdrop-filter:blur(10px);box-shadow:0 14px 40px rgba(0,0,0,.5)}
+ .cytip .td{font:700 11px var(--mono);color:var(--text);margin-bottom:8px}
+ .cytip .tr{display:flex;align-items:center;justify-content:space-between;gap:14px;margin-top:6px}
+ .cytip .tr:first-of-type{margin-top:0}
+ .cytip .tn{display:flex;align-items:center;gap:7px;font:600 11px var(--sans);color:var(--text2)}
+ .cytip .tsw{width:8px;height:8px;border-radius:2px;flex:none}
+ .cytip .tv b{font:700 12px var(--mono);color:var(--text)}
  #plot{position:relative;width:100%}
  #svg{width:100%;height:auto;display:block;overflow:visible;touch-action:none;cursor:crosshair}
  #tip{position:absolute;display:none;pointer-events:none;z-index:5;min-width:158px;padding:11px 13px;border-radius:14px;background:rgba(12,18,32,.86);border:1px solid rgba(148,163,184,.2);backdrop-filter:blur(10px);box-shadow:0 14px 40px rgba(0,0,0,.5)}
@@ -485,26 +494,57 @@ function heatmap(){const el=document.getElementById("heatmap");if(!flags.heatmap
  h+='<div class="hmcell hmylab" style="color:var(--accent-bright)">AVG</div>'+avg.map(cell).join("");
  h+='</div>';el.innerHTML=h;}
 const CYCOL={"2012":"#64748B","2016":"#818CF8","2020":"#2DD4BF","2024":"#FB7E14"};
+let cyDom=[0,1],cyHover=null,cyDragA=null,cyDragB=null,cyDragging=false,cyI0=0,cyI1=0;
+const CYW=1060,CYH=380,CYL=56,CYRp=18,CYT=18,CYB=32,cyPW=CYW-CYL-CYRp,cyPH=CYH-CYT-CYB;
+const cyLG=v=>Math.log(1+Math.max(-99,v)/100);
+function cyDayLabel(d){return "Day "+d+" · Yr "+(Math.floor(d/365.25)+1);}
+function cyXAt(d){return CYL+(d-cyI0)/((cyI1-cyI0)||1)*cyPW;}
 function cycles(){const el=document.getElementById("cycles");if(!flags.halving){el.hidden=true;el.innerHTML="";return;}el.hidden=false;
  const C=D._cycles;if(!C){el.innerHTML='<div class="hmnote">Cycle data unavailable.</div>';return;}
- const N=C.days,W=1060,H=380,pL=56,pR=18,pT=18,pB=32,pw=W-pL-pR,ph=H-pT-pB;
- const xAt=d=>pL+d/(N-1)*pw;const lg=v=>Math.log(1+Math.max(-99,v)/100);
- let lo=Infinity,hi=-Infinity;C.list.forEach(c=>c.path.forEach(v=>{if(v!=null){const t=lg(v);if(t<lo)lo=t;if(t>hi)hi=t;}}));
- if(lo===Infinity){lo=-1;hi=1;}const pd=(hi-lo)*0.06||0.2;lo-=pd;hi+=pd;
- const yAt=v=>pT+(1-(lg(v)-lo)/((hi-lo)||1))*ph;
- const pth=arr=>{let s="",pen=false;for(let d=0;d<N;d++){const v=arr[d];if(v==null){pen=false;continue;}s+=(pen?"L":"M")+xAt(d).toFixed(1)+" "+yAt(v).toFixed(1)+" ";pen=true;}return s.trim();};
- let s='<svg viewBox="0 0 '+W+' '+H+'" style="width:100%;height:auto;display:block;overflow:visible" xmlns="http://www.w3.org/2000/svg">';
- s+='<defs><filter id="cyglow" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="2" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>';
- [-75,0,100,300,1000,3000,8000].forEach(v=>{const t=lg(v);if(t<lo||t>hi)return;const y=yAt(v).toFixed(1);s+='<line x1="'+pL+'" x2="'+(W-pR)+'" y1="'+y+'" y2="'+y+'" stroke="rgba(148,163,184,.1)"/><text x="'+(pL-8)+'" y="'+(+y+3.5)+'" text-anchor="end" fill="rgba(148,163,184,.5)" font-size="10.5" font-family="\'JetBrains Mono\',monospace">'+(v>=0?"+":"")+v+'%</text>';});
- [[0,"Halving"],[365,"Yr 1"],[730,"Yr 2"],[1095,"Yr 3"],[1460,"Yr 4"]].forEach(([d,lab])=>{if(d>=N)return;const x=xAt(d).toFixed(1);s+='<line x1="'+x+'" x2="'+x+'" y1="'+pT+'" y2="'+(pT+ph)+'" stroke="rgba(148,163,184,.07)"/><text x="'+x+'" y="'+(pT+ph+18)+'" text-anchor="middle" fill="rgba(148,163,184,.5)" font-size="10.5" font-family="\'JetBrains Mono\',monospace">'+lab+'</text>';});
- if(C.avg){const d=pth(C.avg);if(d)s+='<path d="'+d+'" fill="none" stroke="#94A3B8" stroke-width="1.6" stroke-dasharray="5 4" opacity="0.8"/>';}
- C.list.forEach(c=>{const d=pth(c.path);if(!d)return;const col=CYCOL[c.label]||"#888";s+='<path d="'+d+'" fill="none" stroke="'+col+'" stroke-width="'+(c.current?3:1.8)+'" stroke-linecap="round" stroke-linejoin="round" opacity="'+(c.current?1:0.85)+'"'+(c.current?' filter="url(#cyglow)"':'')+'/>';});
- const cc=C.list.find(c=>c.current);if(cc&&C.today<N&&cc.path[C.today]!=null){const x=xAt(C.today),y=yAt(cc.path[C.today]);s+='<line x1="'+x.toFixed(1)+'" x2="'+x.toFixed(1)+'" y1="'+pT+'" y2="'+(pT+ph)+'" stroke="rgba(251,126,20,.45)" stroke-dasharray="3 4"/><circle cx="'+x.toFixed(1)+'" cy="'+y.toFixed(1)+'" r="4.5" fill="#FB7E14" stroke="#080D1A" stroke-width="2.5"/>';}
- s+='</svg>';
  let leg='';C.list.forEach(c=>{leg+='<span class="li"><span class="sw" style="border-color:'+(CYCOL[c.label]||"#888")+'"></span>'+c.label+(c.current?" · now":"")+'</span>';});
  leg+='<span class="li"><span class="sw" style="border-bottom-style:dashed;border-color:#94A3B8"></span>Avg (past)</span>';
- el.innerHTML='<div class="cyh"><span class="cyt">BTC · RETURN SINCE HALVING · LOG</span><div class="cyleg">'+leg+'</div></div>'+s+'<div class="cynote">Cumulative % since each halving (Bitstamp data from 2012). 3 full cycles + the current one (orange, ● = today · day '+C.today+'). Log scale — early cycles ran far larger.</div>';
+ const zoomed=(cyDom[0]>0.001||cyDom[1]<0.999);
+ el.innerHTML='<div class="cyh"><span style="display:flex;align-items:center;gap:10px"><span class="cyt">BTC · RETURN SINCE HALVING · LOG</span>'+(zoomed?'<span class="zpill" onclick="cyReset()">ZOOMED · RESET</span>':'')+'</span><div class="cyleg">'+leg+'</div></div>'
+  +'<div class="cyplot"><div id="cyhost"></div><div id="cytip" class="cytip"></div></div>'
+  +'<div class="cynote">Cumulative % since each halving (Bitstamp data from 2012). '+C.list.filter(c=>!c.current).length+' full cycles + the current one (orange, ● = today · day '+C.today+'). Hover for values · drag to zoom · log scale — early cycles ran far larger.</div>';
+ cyRender();cyBind();
 }
+function cyRender(){const C=D._cycles;if(!C)return;const N=C.days;
+ cyI0=Math.round(cyDom[0]*(N-1));cyI1=Math.max(cyI0+1,Math.round(cyDom[1]*(N-1)));
+ let lo=Infinity,hi=-Infinity;const scan=a=>{for(let d=cyI0;d<=cyI1;d++){const v=a[d];if(v!=null){const t=cyLG(v);if(t<lo)lo=t;if(t>hi)hi=t;}}};
+ C.list.forEach(c=>scan(c.path));if(C.avg)scan(C.avg);
+ if(lo===Infinity){lo=-1;hi=1;}const pd=(hi-lo)*0.06||0.2;lo-=pd;hi+=pd;
+ const yAt=v=>CYT+(1-(cyLG(v)-lo)/((hi-lo)||1))*cyPH;
+ const pth=a=>{let s="",pen=false;for(let d=Math.floor(cyI0);d<=Math.ceil(cyI1);d++){const v=a[d];if(v==null){pen=false;continue;}s+=(pen?"L":"M")+cyXAt(d).toFixed(1)+" "+yAt(v).toFixed(1)+" ";pen=true;}return s.trim();};
+ let s='<svg id="cysvg" viewBox="0 0 '+CYW+' '+CYH+'" style="width:100%;height:auto;display:block;overflow:visible" xmlns="http://www.w3.org/2000/svg">';
+ s+='<defs><filter id="cyglow" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="2" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>';
+ [-90,-75,-50,0,50,100,200,300,500,1000,2000,3000,5000,8000].forEach(v=>{const t=cyLG(v);if(t<lo||t>hi)return;const y=yAt(v).toFixed(1);s+='<line x1="'+CYL+'" x2="'+(CYW-CYRp)+'" y1="'+y+'" y2="'+y+'" stroke="rgba(148,163,184,.1)"/><text x="'+(CYL-8)+'" y="'+(+y+3.5)+'" text-anchor="end" fill="rgba(148,163,184,.5)" font-size="10.5" font-family="\'JetBrains Mono\',monospace">'+(v>=0?"+":"")+v+'%</text>';});
+ for(let yr=0;yr<=4;yr++){const d=yr*365;if(d<cyI0||d>cyI1)continue;const x=cyXAt(d).toFixed(1);s+='<line x1="'+x+'" x2="'+x+'" y1="'+CYT+'" y2="'+(CYT+cyPH)+'" stroke="rgba(148,163,184,.07)"/><text x="'+x+'" y="'+(CYT+cyPH+18)+'" text-anchor="middle" fill="rgba(148,163,184,.5)" font-size="10.5" font-family="\'JetBrains Mono\',monospace">'+(yr===0?"Halving":"Yr "+yr)+'</text>';}
+ if(C.avg){const d=pth(C.avg);if(d)s+='<path d="'+d+'" fill="none" stroke="#94A3B8" stroke-width="1.6" stroke-dasharray="5 4" opacity="0.8"/>';}
+ C.list.forEach(c=>{const d=pth(c.path);if(!d)return;const col=CYCOL[c.label]||"#888";s+='<path d="'+d+'" fill="none" stroke="'+col+'" stroke-width="'+(c.current?3:1.8)+'" stroke-linecap="round" stroke-linejoin="round" opacity="'+(c.current?1:0.85)+'"'+(c.current?' filter="url(#cyglow)"':'')+'/>';});
+ const cc=C.list.find(c=>c.current);if(cc&&C.today>=cyI0&&C.today<=cyI1&&cc.path[C.today]!=null){const x=cyXAt(C.today);s+='<line x1="'+x.toFixed(1)+'" x2="'+x.toFixed(1)+'" y1="'+CYT+'" y2="'+(CYT+cyPH)+'" stroke="rgba(251,126,20,.4)" stroke-dasharray="3 4"/><circle cx="'+x.toFixed(1)+'" cy="'+yAt(cc.path[C.today]).toFixed(1)+'" r="4.5" fill="#FB7E14" stroke="#080D1A" stroke-width="2.5"/>';}
+ if(cyDragging&&cyDragA!=null&&cyDragB!=null){const a=Math.min(cyDragA,cyDragB),b=Math.max(cyDragA,cyDragB);if(b>a)s+='<rect x="'+cyXAt(a).toFixed(1)+'" y="'+CYT+'" width="'+(cyXAt(b)-cyXAt(a)).toFixed(1)+'" height="'+cyPH+'" fill="rgba(52,211,153,.12)" stroke="rgba(52,211,153,.45)"/>';}
+ if(cyHover!=null&&cyHover>=cyI0&&cyHover<=cyI1){const hx=cyXAt(cyHover).toFixed(1);s+='<line x1="'+hx+'" x2="'+hx+'" y1="'+CYT+'" y2="'+(CYT+cyPH)+'" stroke="rgba(226,232,240,.3)" stroke-dasharray="3 4"/>';C.list.forEach(c=>{const v=c.path[cyHover];if(v==null)return;s+='<circle cx="'+hx+'" cy="'+yAt(v).toFixed(1)+'" r="4" fill="'+(CYCOL[c.label]||"#888")+'" stroke="#080D1A" stroke-width="2"/>';});}
+ s+='</svg>';document.getElementById("cyhost").innerHTML=s;
+}
+function cyIdx(clientX){const svg=document.getElementById("cysvg");if(!svg)return null;const r=svg.getBoundingClientRect();const px=(clientX-r.left)*CYW/r.width;const f=Math.max(0,Math.min(1,(px-CYL)/cyPW));return Math.round(cyI0+f*(cyI1-cyI0));}
+function cyTip(clientX){const tip=document.getElementById("cytip");const C=D._cycles;if(cyHover==null||!C){tip.style.display="none";return;}
+ const items=C.list.map(c=>({c,v:c.path[cyHover]})).filter(x=>x.v!=null).sort((a,b)=>b.v-a.v);
+ let rows="";items.forEach(({c,v})=>{rows+='<div class="tr"><span class="tn"><span class="tsw" style="background:'+(CYCOL[c.label]||"#888")+'"></span>'+c.label+(c.current?" · now":"")+'</span><span class="tv"><b>'+(v>=0?"+":"")+Math.round(v)+'%</b></span></div>';});
+ if(C.avg&&C.avg[cyHover]!=null){const v=C.avg[cyHover];rows+='<div class="tr"><span class="tn"><span class="tsw" style="background:#94A3B8"></span>Avg</span><span class="tv"><b>'+(v>=0?"+":"")+Math.round(v)+'%</b></span></div>';}
+ if(!rows){tip.style.display="none";return;}
+ tip.innerHTML='<div class="td">'+cyDayLabel(cyHover)+'</div>'+rows;tip.style.display="block";
+ const host=document.getElementById("cyhost").getBoundingClientRect();const px=clientX-host.left;const tw=tip.offsetWidth;const flip=cyHover>cyI0+(cyI1-cyI0)*0.6;tip.style.left=Math.min(Math.max((flip?px-tw-16:px+16),4),host.width-tw-4)+"px";tip.style.top="10px";
+}
+function cyCommit(){if(!cyDragging)return;const N=D._cycles.days;const a=Math.min(cyDragA,cyDragB),b=Math.max(cyDragA,cyDragB);if((b-a)/(N-1)>0.02){cyDom=[a/(N-1),b/(N-1)];}cyDragging=false;cyHover=null;cycles();}
+function cyBind(){const host=document.getElementById("cyhost");
+ host.onmousemove=e=>{const i=cyIdx(e.clientX);if(i==null)return;cyHover=i;if(cyDragging)cyDragB=i;cyRender();cyTip(e.clientX);};
+ host.onmousedown=e=>{const i=cyIdx(e.clientX);if(i==null)return;cyDragging=true;cyDragA=i;cyDragB=i;document.getElementById("cytip").style.display="none";cyRender();};
+ host.onmouseup=cyCommit;
+ host.onmouseleave=()=>{cyDragging=false;cyHover=null;cyRender();document.getElementById("cytip").style.display="none";};
+ host.ondblclick=()=>{cyDom=[0,1];cyHover=null;cycles();};
+}
+function cyReset(){cyDom=[0,1];cyHover=null;cycles();}
 function lbSeg(){const el=document.getElementById("lbSeg");const opts=[["3","3"],["5","5"],["max","Max"]];el.innerHTML="";opts.forEach(([v,lab])=>{const b=document.createElement("button");b.textContent=lab;if(lookback===v)b.className="on";b.onclick=()=>{lookback=v;for(const k in seaCache)delete seaCache[k];for(const k in metCache)delete metCache[k];redraw();};el.appendChild(b);});}
 function swatches(){const col=color(primary());document.getElementById("avgSw").style.borderBottom="2.5px solid "+col;document.getElementById("curSw").style.borderBottom="2.5px dotted "+lighten(col);}
 function togStyle(btn,on,col){if(on){btn.classList.add("on");btn.style.background=alpha(col,.14);btn.style.borderColor=alpha(col,.5);btn.style.color="#F4F7FB";}else{btn.classList.remove("on");btn.style.background="";btn.style.borderColor="";btn.style.color="";}}
@@ -539,7 +579,7 @@ function start(){COINS=M.coins;COINS.forEach((c,i)=>{sel[c]=(i===0);});
  document.getElementById("labsBack").onclick=closeLabs;
  document.addEventListener("keydown",e=>{if(e.key==="Escape"){closeShare();closeLabs();}});
  document.getElementById("resetAll").onclick=()=>{res="D";lookback="max";logScale=false;showNorm=true;showCur=true;showMatch=false;showMatchMonth=false;bq="";bcat="all";bsort="cap";domF=[0,1];hoverIdx=null;COINS.forEach((c,i)=>{sel[c]=(i===0);});redraw();};
- window.addEventListener("mouseup",()=>{if(dragging){const N=ND();const a=Math.min(dragA,dragB),b=Math.max(dragA,dragB);if((b-a)/(N-1)>0.03){domF=[a/(N-1),b/(N-1)];}dragging=false;render();}});
+ window.addEventListener("mouseup",()=>{if(dragging){const N=ND();const a=Math.min(dragA,dragB),b=Math.max(dragA,dragB);if((b-a)/(N-1)>0.03){domF=[a/(N-1),b/(N-1)];}dragging=false;render();}cyCommit();});
  window.addEventListener("resize",()=>render());
  redraw();
 }
