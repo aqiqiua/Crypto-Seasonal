@@ -17,6 +17,7 @@
 
 <template id="tpl-desktop">
 <style>
+
  :root{
   --bg:#080D1A; --text:#F4F7FB; --text2:rgba(203,213,225,.7); --muted:rgba(148,163,184,.55);
   --accent:#34D399; --accent-bright:#5eead4; --teal:#2DD4BF; --teal-deep:#14B8A6; --indigo:#A5B4FC;
@@ -221,45 +222,47 @@
  .scnote{grid-column:1/-1;padding:16px;border-radius:16px;background:rgba(148,163,184,.05);border:1px solid rgba(148,163,184,.12);font:600 12px var(--sans);color:var(--muted)}
  .foot{margin-top:16px;text-align:center;font:600 10.5px var(--mono);letter-spacing:.08em;color:rgba(148,163,184,.4)}
  .status{font:600 13px var(--mono);color:var(--muted);padding:60px 4px;text-align:center}
- .outlook{margin-top:14px;padding:18px 18px 16px;border-radius:20px;background:rgba(148,163,184,.05);border:1px solid rgba(148,163,184,.12);backdrop-filter:blur(14px)}
- .okhd{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:14px}
- .oktt{font:800 10px var(--mono);letter-spacing:.16em;color:var(--muted)}
- .okasset{display:flex;align-items:center;gap:7px;font:700 11.5px var(--mono);color:var(--text)}
- .okdot{width:8px;height:8px;border-radius:50%;flex:none}
- .oktiles{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px}
- .oktile{padding:13px 14px;border-radius:14px;background:rgba(148,163,184,.05);border:1px solid rgba(148,163,184,.1)}
- .okl{font:700 9px var(--mono);letter-spacing:.1em;color:var(--muted);text-transform:uppercase}
- .okbig{margin-top:7px;font:800 21px var(--mono);letter-spacing:-.5px;color:var(--text)}
- .okbig.pos,.btbig.pos{color:var(--pos)}
- .okbig.neg,.btbig.neg{color:var(--neg)}
- .okhit{margin-top:9px}
- .okbar{height:5px;border-radius:999px;background:rgba(148,163,184,.14);overflow:hidden}
- .okbar i{display:block;height:100%;border-radius:999px;background:linear-gradient(90deg,var(--teal),var(--accent))}
- .okhit span{display:block;margin-top:6px;font:600 9.5px var(--mono);color:var(--text2)}
- .btwrap{border-top:1px solid rgba(148,163,184,.1);padding-top:15px}
- .bthd{display:flex;align-items:center;justify-content:space-between;margin-bottom:11px;flex-wrap:wrap;gap:6px}
- .btlab{font:800 9px var(--mono);letter-spacing:.14em;color:var(--muted)}
- .btrange{font:600 11px var(--sans);color:var(--text2)}
- .btrange b{color:var(--accent-bright);font-family:var(--mono);font-weight:700}
- .btstrip{display:grid;grid-template-columns:repeat(12,1fr);gap:4px;margin-bottom:15px}
- .btm{padding:7px 2px;text-align:center;border-radius:8px;cursor:pointer;font:700 9.5px var(--mono);color:var(--text2);background:rgba(148,163,184,.05);border:1px solid transparent;transition:.12s;user-select:none}
- .btm:hover{color:var(--text);background:rgba(148,163,184,.1)}
- .btm.in{background:rgba(52,211,153,.13);color:var(--accent-bright)}
- .btm.buy{background:rgba(52,211,153,.26);border-color:var(--accent);color:#EAFBF4}
- .btm.sell{background:rgba(45,212,191,.26);border-color:var(--teal);color:#EAFBF4}
- .btbig{font:800 30px var(--mono);letter-spacing:-.5px;color:var(--text)}
- .btsub{margin-top:3px;font:600 11px var(--sans);color:var(--text2)}
- .btex{margin-top:9px;display:flex;gap:16px;font:700 10.5px var(--mono)}
- .btex .pos{color:var(--pos)}
- .btex .neg{color:var(--neg)}
- .ybars{margin-top:14px;display:flex;align-items:stretch;gap:5px;overflow-x:auto;padding-bottom:2px}
- .ybwrap{display:flex;flex-direction:column;align-items:center;gap:5px;flex:1;min-width:26px}
- .ybar{position:relative;width:100%;height:66px}
- .ybar::before{content:"";position:absolute;left:8%;right:8%;top:50%;height:1px;background:rgba(148,163,184,.16)}
- .yb{position:absolute;left:22%;right:22%;border-radius:2px}
- .yb.pos{bottom:50%;background:linear-gradient(180deg,var(--accent),var(--teal-deep))}
- .yb.neg{top:50%;background:linear-gradient(180deg,#FB7185,#9F1239)}
- .ybwrap span{font:600 8.5px var(--mono);color:var(--muted)}
+
+ .backtest{margin-top:14px;padding:18px 18px 16px;border-radius:20px;background:rgba(148,163,184,.05);border:1px solid rgba(148,163,184,.12);backdrop-filter:blur(14px)}
+ .backtest[hidden]{display:none}
+ .bt-hd{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:15px}
+ .bt-t{font:800 10px var(--mono);letter-spacing:.16em;color:var(--muted)}
+ .bt-asset{display:flex;align-items:center;gap:8px;font:700 12px var(--mono);color:var(--text2)}
+ .bt-asset .d{width:9px;height:9px;border-radius:50%;flex:none}
+ .bt-asset b{color:var(--text)}
+ .bt-cards{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+ .bt-card{padding:15px 16px;border-radius:16px;background:rgba(148,163,184,.04);border:1px solid rgba(148,163,184,.1)}
+ .bt-card .l{font:800 9px var(--mono);letter-spacing:.15em;color:var(--muted)}
+ .bt-card .v{margin-top:8px;font:800 27px var(--mono);letter-spacing:-.5px}
+ .bt-bar{margin-top:12px;height:5px;border-radius:999px;background:rgba(148,163,184,.14);overflow:hidden}
+ .bt-bar i{display:block;height:100%;border-radius:999px}
+ .bt-card .s{margin-top:10px;font:600 10.5px var(--mono);color:rgba(148,163,184,.6)}
+ .bt-div{height:1px;background:rgba(148,163,184,.1);margin:16px 0}
+ .bt-hold{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:11px}
+ .bt-hold .lb{font:800 9px var(--mono);letter-spacing:.16em;color:var(--muted)}
+ .bt-hold .rt{font:600 12.5px var(--sans);color:var(--text2)}
+ .bt-hold .rt b{color:var(--accent-bright);font-weight:800}
+ .bt-months{display:grid;grid-template-columns:repeat(12,1fr);gap:6px}
+ .bt-m{padding:10px 4px;border-radius:11px;text-align:center;cursor:pointer;font:700 12.5px var(--sans);color:var(--text2);background:rgba(148,163,184,.05);border:1px solid rgba(148,163,184,.1);transition:.14s}
+ .bt-m:hover{color:var(--text);border-color:rgba(148,163,184,.24)}
+ .bt-m.inrange{background:rgba(52,211,153,.08)}
+ .bt-m.buy{border-color:#34D399;color:#5eead4;background:rgba(52,211,153,.12);font-weight:800}
+ .bt-m.sell{border-color:#2DD4BF;color:#7ff0e0;background:rgba(45,212,191,.12);font-weight:800}
+ .bt-res{margin-top:18px}
+ .bt-big{font:800 34px var(--mono);letter-spacing:-1px;line-height:1}
+ .bt-sub{margin-top:9px;font:600 12.5px var(--sans);color:rgba(148,163,184,.62)}
+ .bt-bw{margin-top:10px;display:flex;gap:20px;font:700 12.5px var(--mono)}
+ .bt-bw .bst{color:var(--accent-bright)}
+ .bt-bw .wst{color:var(--neg)}
+ .bt-chart{margin-top:20px;display:flex;flex-direction:column;gap:9px}
+ .bt-row{display:grid;grid-template-columns:32px 1fr 58px;align-items:center;gap:12px}
+ .bt-row .yr{font:700 10.5px var(--mono);color:rgba(148,163,184,.55)}
+ .bt-tk{position:relative;height:15px;border-radius:8px;background:rgba(148,163,184,.05);border:1px solid rgba(148,163,184,.08)}
+ .bt-tk .ax{position:absolute;left:50%;top:-1px;bottom:-1px;width:1px;background:rgba(148,163,184,.3)}
+ .bt-tk .fl{position:absolute;top:2px;bottom:2px;border-radius:5px;min-width:3px}
+ .bt-tk .fl.pos{background:linear-gradient(90deg,#2DD4BF,#34D399)}
+ .bt-tk .fl.neg{background:linear-gradient(270deg,#FB7185,#E11D48)}
+ .bt-row .rv{text-align:right;font:700 12px var(--mono)}
 
 </style>
 <div class="aurora">
@@ -300,9 +303,9 @@
   </div>
 
   <div class="statcards" id="statcards"></div>
-  <div class="outlook" id="outlook"></div>
   <div class="heatmap" id="heatmap" hidden="hidden"></div>
   <div class="cycles" id="cycles" hidden="hidden"></div>
+  <div class="backtest" id="backtest" hidden="hidden"></div>
 
   <div class="foot">UPDATES ONCE A DAY · UTC+3</div>
  </div>
@@ -330,6 +333,7 @@
 
 <template id="tpl-mobile">
 <style>
+
  :root{
   --bg:#080D1A; --text:#F4F7FB; --text2:rgba(203,213,225,.7); --muted:rgba(148,163,184,.55);
   --accent:#34D399; --accent-bright:#5eead4; --teal:#2DD4BF; --teal-deep:#14B8A6; --indigo:#A5B4FC;
@@ -621,45 +625,70 @@
  .screen .slrow .vsep{display:inline-block}
  .screen .slrow .nm{font-size:11.5px}
  .screen .slrow>span:not(.nm){padding:0;background:none;border:none}
- .outlook{margin-top:14px;padding:18px 18px 16px;border-radius:20px;background:rgba(148,163,184,.05);border:1px solid rgba(148,163,184,.12);backdrop-filter:blur(14px)}
- .okhd{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:14px}
- .oktt{font:800 10px var(--mono);letter-spacing:.16em;color:var(--muted)}
- .okasset{display:flex;align-items:center;gap:7px;font:700 11.5px var(--mono);color:var(--text)}
- .okdot{width:8px;height:8px;border-radius:50%;flex:none}
- .oktiles{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px}
- .oktile{padding:13px 14px;border-radius:14px;background:rgba(148,163,184,.05);border:1px solid rgba(148,163,184,.1)}
- .okl{font:700 9px var(--mono);letter-spacing:.1em;color:var(--muted);text-transform:uppercase}
- .okbig{margin-top:7px;font:800 21px var(--mono);letter-spacing:-.5px;color:var(--text)}
- .okbig.pos,.btbig.pos{color:var(--pos)}
- .okbig.neg,.btbig.neg{color:var(--neg)}
- .okhit{margin-top:9px}
- .okbar{height:5px;border-radius:999px;background:rgba(148,163,184,.14);overflow:hidden}
- .okbar i{display:block;height:100%;border-radius:999px;background:linear-gradient(90deg,var(--teal),var(--accent))}
- .okhit span{display:block;margin-top:6px;font:600 9.5px var(--mono);color:var(--text2)}
- .btwrap{border-top:1px solid rgba(148,163,184,.1);padding-top:15px}
- .bthd{display:flex;align-items:center;justify-content:space-between;margin-bottom:11px;flex-wrap:wrap;gap:6px}
- .btlab{font:800 9px var(--mono);letter-spacing:.14em;color:var(--muted)}
- .btrange{font:600 11px var(--sans);color:var(--text2)}
- .btrange b{color:var(--accent-bright);font-family:var(--mono);font-weight:700}
- .btstrip{display:grid;grid-template-columns:repeat(12,1fr);gap:4px;margin-bottom:15px}
- .btm{padding:7px 2px;text-align:center;border-radius:8px;cursor:pointer;font:700 9.5px var(--mono);color:var(--text2);background:rgba(148,163,184,.05);border:1px solid transparent;transition:.12s;user-select:none}
- .btm:hover{color:var(--text);background:rgba(148,163,184,.1)}
- .btm.in{background:rgba(52,211,153,.13);color:var(--accent-bright)}
- .btm.buy{background:rgba(52,211,153,.26);border-color:var(--accent);color:#EAFBF4}
- .btm.sell{background:rgba(45,212,191,.26);border-color:var(--teal);color:#EAFBF4}
- .btbig{font:800 30px var(--mono);letter-spacing:-.5px;color:var(--text)}
- .btsub{margin-top:3px;font:600 11px var(--sans);color:var(--text2)}
- .btex{margin-top:9px;display:flex;gap:16px;font:700 10.5px var(--mono)}
- .btex .pos{color:var(--pos)}
- .btex .neg{color:var(--neg)}
- .ybars{margin-top:14px;display:flex;align-items:stretch;gap:5px;overflow-x:auto;padding-bottom:2px}
- .ybwrap{display:flex;flex-direction:column;align-items:center;gap:5px;flex:1;min-width:26px}
- .ybar{position:relative;width:100%;height:66px}
- .ybar::before{content:"";position:absolute;left:8%;right:8%;top:50%;height:1px;background:rgba(148,163,184,.16)}
- .yb{position:absolute;left:22%;right:22%;border-radius:2px}
- .yb.pos{bottom:50%;background:linear-gradient(180deg,var(--accent),var(--teal-deep))}
- .yb.neg{top:50%;background:linear-gradient(180deg,#FB7185,#9F1239)}
- .ybwrap span{font:600 8.5px var(--mono);color:var(--muted)}
+
+ .backtest{margin-top:14px;padding:18px 18px 16px;border-radius:20px;background:rgba(148,163,184,.05);border:1px solid rgba(148,163,184,.12);backdrop-filter:blur(14px)}
+ .backtest[hidden]{display:none}
+ .bt-hd{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:15px}
+ .bt-t{font:800 10px var(--mono);letter-spacing:.16em;color:var(--muted)}
+ .bt-asset{display:flex;align-items:center;gap:8px;font:700 12px var(--mono);color:var(--text2)}
+ .bt-asset .d{width:9px;height:9px;border-radius:50%;flex:none}
+ .bt-asset b{color:var(--text)}
+ .bt-cards{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+ .bt-card{padding:15px 16px;border-radius:16px;background:rgba(148,163,184,.04);border:1px solid rgba(148,163,184,.1)}
+ .bt-card .l{font:800 9px var(--mono);letter-spacing:.15em;color:var(--muted)}
+ .bt-card .v{margin-top:8px;font:800 27px var(--mono);letter-spacing:-.5px}
+ .bt-bar{margin-top:12px;height:5px;border-radius:999px;background:rgba(148,163,184,.14);overflow:hidden}
+ .bt-bar i{display:block;height:100%;border-radius:999px}
+ .bt-card .s{margin-top:10px;font:600 10.5px var(--mono);color:rgba(148,163,184,.6)}
+ .bt-div{height:1px;background:rgba(148,163,184,.1);margin:16px 0}
+ .bt-hold{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:11px}
+ .bt-hold .lb{font:800 9px var(--mono);letter-spacing:.16em;color:var(--muted)}
+ .bt-hold .rt{font:600 12.5px var(--sans);color:var(--text2)}
+ .bt-hold .rt b{color:var(--accent-bright);font-weight:800}
+ .bt-months{display:grid;grid-template-columns:repeat(12,1fr);gap:6px}
+ .bt-m{padding:10px 4px;border-radius:11px;text-align:center;cursor:pointer;font:700 12.5px var(--sans);color:var(--text2);background:rgba(148,163,184,.05);border:1px solid rgba(148,163,184,.1);transition:.14s}
+ .bt-m:hover{color:var(--text);border-color:rgba(148,163,184,.24)}
+ .bt-m.inrange{background:rgba(52,211,153,.08)}
+ .bt-m.buy{border-color:#34D399;color:#5eead4;background:rgba(52,211,153,.12);font-weight:800}
+ .bt-m.sell{border-color:#2DD4BF;color:#7ff0e0;background:rgba(45,212,191,.12);font-weight:800}
+ .bt-res{margin-top:18px}
+ .bt-big{font:800 34px var(--mono);letter-spacing:-1px;line-height:1}
+ .bt-sub{margin-top:9px;font:600 12.5px var(--sans);color:rgba(148,163,184,.62)}
+ .bt-bw{margin-top:10px;display:flex;gap:20px;font:700 12.5px var(--mono)}
+ .bt-bw .bst{color:var(--accent-bright)}
+ .bt-bw .wst{color:var(--neg)}
+ .bt-chart{margin-top:20px;display:flex;flex-direction:column;gap:9px}
+ .bt-row{display:grid;grid-template-columns:32px 1fr 58px;align-items:center;gap:12px}
+ .bt-row .yr{font:700 10.5px var(--mono);color:rgba(148,163,184,.55)}
+ .bt-tk{position:relative;height:15px;border-radius:8px;background:rgba(148,163,184,.05);border:1px solid rgba(148,163,184,.08)}
+ .bt-tk .ax{position:absolute;left:50%;top:-1px;bottom:-1px;width:1px;background:rgba(148,163,184,.3)}
+ .bt-tk .fl{position:absolute;top:2px;bottom:2px;border-radius:5px;min-width:3px}
+ .bt-tk .fl.pos{background:linear-gradient(90deg,#2DD4BF,#34D399)}
+ .bt-tk .fl.neg{background:linear-gradient(270deg,#FB7185,#E11D48)}
+ .bt-row .rv{text-align:right;font:700 12px var(--mono)}
+
+ .screen .backtest{padding:14px 12px 13px}
+ .screen .bt-hd{margin-bottom:12px}
+ .screen .bt-asset{font-size:10.5px;gap:6px}
+ .screen .bt-cards{gap:7px}
+ .screen .bt-card{padding:10px 9px}
+ .screen .bt-card .l{font-size:7.5px;letter-spacing:.08em;min-height:18px;line-height:1.25}
+ .screen .bt-card .v{font-size:17px;margin-top:4px}
+ .screen .bt-card .s{font-size:8px;margin-top:8px}
+ .screen .bt-bar{margin-top:8px;height:4px}
+ .screen .bt-div{margin:14px 0}
+ .screen .bt-hold .rt{font-size:11px}
+ .screen .bt-months{grid-template-columns:repeat(6,1fr);gap:5px}
+ .screen .bt-m{padding:8px 2px;font-size:11px;border-radius:9px}
+ .screen .bt-res{margin-top:15px}
+ .screen .bt-big{font-size:28px}
+ .screen .bt-sub{font-size:11px;margin-top:7px}
+ .screen .bt-bw{gap:14px;font-size:11.5px}
+ .screen .bt-chart{margin-top:16px;gap:7px}
+ .screen .bt-row{grid-template-columns:26px 1fr 50px;gap:9px}
+ .screen .bt-row .yr{font-size:9.5px}
+ .screen .bt-tk{height:13px}
+ .screen .bt-row .rv{font-size:11px}
 
 
  /* --- deploy overrides: un-mockup the iOS frame, fill the real viewport --- */
@@ -671,8 +700,7 @@
  .sheetpanel{border-radius:24px 24px 0 0;padding-bottom:calc(30px + env(safe-area-inset-bottom,0px));overscroll-behavior:contain}
 
 </style>
-<div class="screen">
-   <div class="aurora">
+<div class="screen"><div class="aurora">
     <div class="glow g1"></div><div class="glow g2"></div><div class="glow g3"></div>
     <div class="appscroll">
      <div class="head">
@@ -692,19 +720,19 @@
      </div>
      <div class="subleg" id="subleg"></div>
      <div class="statcards" id="statcards"></div>
-     <div class="outlook" id="outlook"></div>
      <div class="mrowlab">MONTHLY RETURN HEATMAP</div>
      <div class="heatmap" id="heatmap" hidden="hidden"></div>
      <div class="mrowlab">BTC HALVING CYCLES</div>
      <div class="cycles" id="cycles" hidden="hidden"></div>
+      <div class="mrowlab">SEASONAL OUTLOOK · BACKTEST</div>
+      <div class="backtest" id="backtest" hidden="hidden"></div>
      <div class="foot">UPDATES ONCE A DAY · UTC+3</div>
     </div>
     <div class="sheet" id="assetSheet" hidden="hidden"><div class="sheetback" id="assetBack"></div><div class="sheetpanel"><div class="grab"></div><div class="sheethd"><span>Choose assets</span><span class="sheetacts"><button class="ghost" id="resetAll">Defaults</button><button class="sheetdone" id="assetDone">Done</button></span></div><div class="browser" id="browser"></div></div></div>
     <button id="labsBtn" style="display:none" aria-hidden="true"></button>
     <div class="modal" id="shareModal" hidden="hidden"><div class="mback" id="shareBack"></div><div class="mbox"><div class="mhd"><span class="mtitle"><span class="micon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#5eead4" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><path d="M8.6 13.5l6.8 4M15.4 6.5l-6.8 4"></path></svg></span>Share this view</span><button class="mx" id="shareClose">✕</button></div><div class="mcard"><div class="mlab">Link — opens this exact chart</div><div class="linkrow"><input id="shareUrl" readonly="" value=""><button class="mbtn" id="copyLink">Copy link</button></div></div><div class="mcard"><div class="mlab">Image &amp; embed</div><div class="mrow2"><button class="mbtn2" id="dlPng">⬇  Download PNG</button><button class="mbtn2" id="copyEmbed">&lt;/&gt;  Copy embed code</button></div></div><div class="mhint">The link and embed carry the selected assets, timeframe, years and toggles — anyone who opens it sees the same view.</div></div></div>
     <div class="modal" id="labsModal" hidden="hidden"><div class="mback" id="labsBack"></div><div class="mbox"><div class="mhd"><span>Experimental features</span><button class="mx" id="labsClose">✕</button></div><div id="labsList"></div><div class="mhint">Off by default.</div></div></div>
-   </div>
-</div>
+</div></div>
 </template>
 
 <script>
@@ -934,11 +962,12 @@ function copyText(t,btn,label){const done=()=>{btn.textContent="Copied ✓";setT
 function openShare(){persist();document.getElementById("shareUrl").value=location.href;document.getElementById("shareModal").hidden=false;const u=document.getElementById("shareUrl");u.focus();u.select();}
 function closeShare(){document.getElementById("shareModal").hidden=true;}
 const FLAGS=[{key:"heatmap",label:"Monthly return heatmap",desc:"A year × month grid of returns for the selected asset — spot which months are usually strong or weak at a glance."},
- {key:"halving",label:"Halving-cycle overlay (BTC)",desc:"Compare BTC's return by days-since-halving across every cycle since 2012 — see where the current cycle sits versus past ones. Log scale."}];
+ {key:"halving",label:"Halving-cycle overlay (BTC)",desc:"Compare BTC's return by days-since-halving across every cycle since 2012 — see where the current cycle sits versus past ones. Log scale."},
+ {key:"backtest",label:"Seasonal outlook & backtest",desc:"Forward 30/90-day and rest-of-year odds from past years, plus a buy-month → sell-month holding backtest with per-year results."}];
 let flags={};
 function loadFlags(){try{flags=JSON.parse(localStorage.getItem("si_flags"))||{};}catch(e){flags={};}FLAGS.forEach(f=>{if(typeof flags[f.key]!=="boolean")flags[f.key]=false;});}
 function saveFlags(){try{localStorage.setItem("si_flags",JSON.stringify(flags));}catch(e){}}
-function renderLabs(){const el=document.getElementById("labsList");const IC={heatmap:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none"><rect x="3" y="3" width="7" height="7" rx="1.6" fill="#34D399" opacity=".92"></rect><rect x="14" y="3" width="7" height="7" rx="1.6" fill="#2DD4BF" opacity=".5"></rect><rect x="3" y="14" width="7" height="7" rx="1.6" fill="#FB7185" opacity=".7"></rect><rect x="14" y="14" width="7" height="7" rx="1.6" fill="#34D399" opacity=".38"></rect></svg>',halving:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M3 16c3 0 3-9 6-9s3 6 6 6 3-6 6-6" stroke="#FB7E14" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"></path><circle cx="21" cy="7" r="1.9" fill="#FB7E14"></circle></svg>'};
+function renderLabs(){const el=document.getElementById("labsList");const IC={heatmap:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none"><rect x="3" y="3" width="7" height="7" rx="1.6" fill="#34D399" opacity=".92"></rect><rect x="14" y="3" width="7" height="7" rx="1.6" fill="#2DD4BF" opacity=".5"></rect><rect x="3" y="14" width="7" height="7" rx="1.6" fill="#FB7185" opacity=".7"></rect><rect x="14" y="14" width="7" height="7" rx="1.6" fill="#34D399" opacity=".38"></rect></svg>',halving:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M3 16c3 0 3-9 6-9s3 6 6 6 3-6 6-6" stroke="#FB7E14" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"></path><circle cx="21" cy="7" r="1.9" fill="#FB7E14"></circle></svg>',backtest:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none"><rect x="3" y="10" width="4" height="9" rx="1.3" fill="#34D399"></rect><rect x="10" y="5" width="4" height="14" rx="1.3" fill="#2DD4BF"></rect><rect x="17" y="13" width="4" height="6" rx="1.3" fill="#FB7185"></rect></svg>'};
  el.innerHTML=FLAGS.map(f=>'<div class="labrow'+(flags[f.key]?" on":"")+'" data-flag="'+f.key+'"><div class="ic">'+(IC[f.key]||"")+'</div><div class="txt"><div class="lt">'+f.label+'</div><div class="ld">'+f.desc+'</div></div><div class="switch'+(flags[f.key]?" on":"")+'"><div class="knob"></div></div></div>').join("");
  el.querySelectorAll(".labrow").forEach(r=>r.onclick=()=>{const k=r.getAttribute("data-flag");flags[k]=!flags[k];saveFlags();renderLabs();redraw();});}
 function openLabs(){renderLabs();document.getElementById("labsModal").hidden=false;}
@@ -1024,6 +1053,43 @@ function cyBind(){const host=document.getElementById("cyhost");
    cyHover=null;cyRender();},{passive:false});
 }
 function cyReset(){cyDom=[0,1];cyVf=[0,1];cyHover=null;cycles();}
+let bkBuy=null,bkSell=null,bkAnchor=null;
+function btYears(c){var ys=(D[c]&&D[c].yrs)||[];var N=lookback==="max"?ys.length:Math.min(ys.length,+lookback);return ys.slice(-N);}
+function btRet(p,a,b){if(!p||p[a]==null||p[b]==null)return null;return (Math.exp((p[b]-p[a])/100)-1)*100;}
+function btWin(c,a,b){var ys=btYears(c);var arr=[];ys.forEach(function(y){var r=btRet(D[c].years[String(y)],a,b);if(r!=null)arr.push({year:y,ret:r});});
+ if(!arr.length)return null;var rs=arr.map(function(x){return x.ret;}).slice().sort(function(p,q){return p-q;});
+ var avg=rs.reduce(function(s,v){return s+v;},0)/rs.length;
+ var med=rs.length%2?rs[(rs.length-1)/2]:(rs[rs.length/2-1]+rs[rs.length/2])/2;
+ var up=arr.filter(function(x){return x.ret>0;}).length;var best=arr[0],worst=arr[0];arr.forEach(function(x){if(x.ret>best.ret)best=x;if(x.ret<worst.ret)worst=x;});
+ return {avg:avg,med:med,up:up,n:arr.length,best:best,worst:worst,list:arr};}
+function btFmt(v,d){return (v>=0?"+":"")+v.toFixed(d==null?1:d)+"%";}
+function btGrad(pos){return pos?"linear-gradient(90deg,#34D399,#2DD4BF)":"linear-gradient(90deg,#FB7185,#F43F5E)";}
+function btCard(lbl,o){if(!o)return '<div class="bt-card"><div class="l">'+lbl+'</div><div class="v" style="color:var(--muted)">–</div><div class="bt-bar"><i style="width:0"></i></div><div class="s">no data</div></div>';
+ var v=o.avg,pos=v>=0,pct=Math.round(o.up/o.n*100);
+ return '<div class="bt-card"><div class="l">'+lbl+'</div><div class="v" style="color:'+(pos?"#34D399":"#FB7185")+'">'+btFmt(v)+'</div><div class="bt-bar"><i style="width:'+pct+'%;background:'+btGrad(pos)+'"></i></div><div class="s">'+pct+'% up · '+o.up+'/'+o.n+' yrs</div></div>';}
+function backtest(){var el=document.getElementById("backtest");if(!el)return;if(!flags.backtest){el.hidden=true;el.innerHTML="";return;}el.hidden=false;
+ var c=primary();var ys=btYears(c);
+ if(ys.length<1){el.innerHTML='<div class="hmnote">No yearly history for '+c+'.</div>';return;}
+ if(bkBuy==null){bkBuy=curMonth()-1;bkSell=11;}
+ var t=M.today_d;var o30=btWin(c,t,Math.min(M.Dn-1,t+30)),o90=btWin(c,t,Math.min(M.Dn-1,t+90)),oRoY=btWin(c,t,M.Dn-1);
+ var a=MSTART[bkBuy],b=bkSell<11?MSTART[bkSell+1]-1:M.Dn-1;var w=btWin(c,a,b);var col=color(c);
+ var h="";
+ h+='<div class="bt-hd"><span class="bt-t">SEASONAL OUTLOOK · BACKTEST</span><span class="bt-asset"><span class="d" style="background:'+col+';box-shadow:0 0 8px '+col+'"></span><b>'+c+'</b> · '+(NAMES[c]||c)+'</span></div>';
+ h+='<div class="bt-cards">'+btCard("NEXT 30D",o30)+btCard("NEXT 90D",o90)+btCard("REST OF YEAR",oRoY)+'</div>';
+ h+='<div class="bt-div"></div>';
+ h+='<div class="bt-hold"><span class="lb">IF YOU BOUGHT &amp; HELD</span><span class="rt">Buy <b>'+MON3[bkBuy]+'</b> → Sell <b>'+MON3[bkSell]+'</b></span></div>';
+ var mh='<div class="bt-months">';for(var m=0;m<12;m++){var cls="bt-m";if(m>bkBuy&&m<bkSell)cls+=" inrange";if(m===bkBuy)cls+=" buy";if(m===bkSell)cls+=" sell";if(bkBuy===bkSell&&m===bkBuy)cls="bt-m buy";mh+='<button class="'+cls+'" data-m="'+m+'">'+MON3[m]+'</button>';}mh+='</div>';h+=mh;
+ if(w){var pos=w.avg>=0;
+  h+='<div class="bt-res"><div class="bt-big" style="color:'+(pos?"#34D399":"#FB7185")+'">'+btFmt(w.avg)+'</div>';
+  h+='<div class="bt-sub">avg return · '+Math.round(w.up/w.n*100)+'% positive ('+w.n+' yr'+(w.n>1?"s":"")+') · median '+btFmt(w.med)+'</div>';
+  h+='<div class="bt-bw"><span class="bst">best ’'+String(w.best.year).slice(2)+' '+btFmt(w.best.ret,0)+'</span><span class="wst">worst ’'+String(w.worst.year).slice(2)+' '+btFmt(w.worst.ret,0)+'</span></div>';
+  var mx=0;w.list.forEach(function(x){mx=Math.max(mx,Math.abs(x.ret));});mx=mx||1;
+  var rows="";w.list.forEach(function(x){var p=x.ret>=0;var wd=(Math.abs(x.ret)/mx*50).toFixed(1);
+    rows+='<div class="bt-row"><span class="yr">’'+String(x.year).slice(2)+'</span><div class="bt-tk"><span class="ax"></span><span class="fl '+(p?"pos":"neg")+'" style="'+(p?"left:50%":"right:50%")+';width:'+wd+'%"></span></div><span class="rv" style="color:'+(p?"#34D399":"#FB7185")+'">'+btFmt(x.ret,0)+'</span></div>';});
+  h+='<div class="bt-chart">'+rows+'</div></div>';}
+ el.innerHTML=h;
+ el.querySelectorAll(".bt-m").forEach(function(btn){btn.onclick=function(){var m=+btn.getAttribute("data-m");if(bkAnchor==null){bkAnchor=m;bkBuy=m;bkSell=m;}else{bkBuy=Math.min(bkAnchor,m);bkSell=Math.max(bkAnchor,m);bkAnchor=null;}backtest();};});
+}
 function lbSeg(){const el=document.getElementById("lbSeg");const opts=[["3","3"],["5","5"],["10","10"],["max","Max"]];el.innerHTML="";opts.forEach(([v,lab])=>{const b=document.createElement("button");b.textContent=lab;if(lookback===v)b.className="on";b.onclick=()=>{lookback=v;for(const k in seaCache)delete seaCache[k];for(const k in metCache)delete metCache[k];redraw();};el.appendChild(b);});}
 function swatches(){const col=color(primary());document.getElementById("avgSw").style.borderBottom="2.5px solid "+col;document.getElementById("curSw").style.borderBottom="2.5px dotted "+lighten(col);}
 function togStyle(btn,on,col){if(on){btn.classList.add("on");btn.style.background=alpha(col,.14);btn.style.borderColor=alpha(col,.5);btn.style.color="#F4F7FB";}else{btn.classList.remove("on");btn.style.background="";btn.style.borderColor="";btn.style.color="";}}
@@ -1034,41 +1100,7 @@ function toolbarState(){const col=color(primary());
  togStyle(document.getElementById("smBtn"),showMatchMonth,"#A5B4FC");
 }
 
-function redraw(){swatches();toolbarState();browser();subleg();statcards();outlook();heatmap();cycles();lbSeg();render();bindPlot();persist();}
-
-/* ===== Seasonal outlook + backtester ===== */
-let btBuy=null, btSell=11;
-function lbYears(c){const ys=(D[c]&&D[c].yrs)||[];const N=lookback==="max"?ys.length:Math.min(+lookback,ys.length);return ys.slice(-N);}
-function winRet(c,y,a,b){const yr=D[c]&&D[c].years;const arr=yr&&yr[String(y)];if(!arr)return null;const va=arr[a],vb=arr[b];if(va==null||vb==null)return null;return (Math.exp((vb-va)/100)-1)*100;}
-function fwd(c,days){const use=lbYears(c);const dS=M.today_d;const dE=days==null?(M.Dn-1):Math.min(dS+days,M.Dn-1);if(dE<=dS)return null;const rs=[];use.forEach(y=>{const r=winRet(c,y,dS,dE);if(r!=null)rs.push(r);});if(!rs.length)return null;const mean=rs.reduce((s,x)=>s+x,0)/rs.length;const pos=rs.filter(x=>x>0).length;return{mean:mean,pos:pos,n:rs.length,hit:pos/rs.length};}
-function seasonWindow(c,mB,mS){const use=lbYears(c);const dB=MSTART[mB];const dE=Math.min(MSTART[mS]+ML[mS]-1,M.Dn-1);if(dE<dB)return null;const rows=[];use.forEach(y=>{const r=winRet(c,y,dB,dE);if(r!=null)rows.push({y:y,r:r});});if(!rows.length)return null;const rs=rows.map(x=>x.r).slice().sort((a,b)=>a-b);const mean=rs.reduce((s,x)=>s+x,0)/rs.length;const med=rs.length%2?rs[(rs.length-1)/2]:(rs[rs.length/2-1]+rs[rs.length/2])/2;const pos=rows.filter(x=>x.r>0).length;let best=rows[0],worst=rows[0];rows.forEach(x=>{if(x.r>best.r)best=x;if(x.r<worst.r)worst=x;});return{mean:mean,med:med,pos:pos,n:rows.length,hit:pos/rows.length,best:best,worst:worst,rows:rows};}
-function btPick(m){if(btSell==null){if(m>=btBuy)btSell=m;else btBuy=m;}else{btBuy=m;btSell=null;}outlook();}
-function outlook(){
- const el=document.getElementById("outlook");if(!el)return;
- const c=primary();if(!c||!D[c]){el.innerHTML="";return;}
- if(btBuy==null){btBuy=Math.max(0,curMonth()-1);btSell=11;}
- const col=color(c),nm=NAMES[c]||c;
- const hz=[["Next 30d",fwd(c,30)],["Next 90d",fwd(c,90)],["Rest of year",fwd(c,null)]];
- let tiles="";
- hz.forEach(h=>{const lab=h[0],f=h[1];
-  if(!f){tiles+='<div class="oktile"><div class="okl">'+lab+'</div><div class="okbig">—</div></div>';return;}
-  const cl=f.mean>=0?"pos":"neg";
-  tiles+='<div class="oktile"><div class="okl">'+lab+'</div><div class="okbig '+cl+'">'+(f.mean>=0?"+":"")+f.mean.toFixed(1)+'%</div><div class="okhit"><div class="okbar"><i style="width:'+Math.round(f.hit*100)+'%"></i></div><span>'+Math.round(f.hit*100)+'% up · '+f.pos+'/'+f.n+' yrs</span></div></div>';});
- const sM=btSell!=null?btSell:btBuy;
- const bt=seasonWindow(c,btBuy,sM);
- let strip="";
- for(let m=0;m<12;m++){const inR=m>=btBuy&&m<=sM;const cl="btm"+(inR?" in":"")+(m===btBuy?" buy":"")+(m===sM&&sM!==btBuy?" sell":"");strip+='<div class="'+cl+'" data-m="'+m+'">'+MON3[m]+'</div>';}
- let res="";
- if(bt){
-  const cl=bt.mean>=0?"pos":"neg";
-  const mx=Math.max.apply(null,bt.rows.map(x=>Math.abs(x.r)).concat([1]));
-  let bars="";
-  bt.rows.forEach(x=>{const h=Math.max(2,Math.round(Math.abs(x.r)/mx*30));const pn=x.r>=0?"pos":"neg";bars+='<div class="ybwrap"><div class="ybar" title="'+x.y+': '+(x.r>=0?"+":"")+x.r.toFixed(1)+'%"><div class="yb '+pn+'" style="height:'+h+'px"></div></div><span>’'+String(x.y).slice(2)+'</span></div>';});
-  res='<div class="btbig '+cl+'">'+(bt.mean>=0?"+":"")+bt.mean.toFixed(1)+'%</div><div class="btsub">avg return · '+Math.round(bt.hit*100)+'% positive ('+bt.pos+'/'+bt.n+' yrs) · median '+(bt.med>=0?"+":"")+bt.med.toFixed(1)+'%</div><div class="btex"><span class="pos">best ’'+String(bt.best.y).slice(2)+' '+(bt.best.r>=0?"+":"")+bt.best.r.toFixed(0)+'%</span><span class="neg">worst ’'+String(bt.worst.y).slice(2)+' '+(bt.worst.r>=0?"+":"")+bt.worst.r.toFixed(0)+'%</span></div><div class="ybars">'+bars+'</div>';
- } else res='<div class="hmnote">Not enough history for this window.</div>';
- el.innerHTML='<div class="okhd"><span class="oktt">SEASONAL OUTLOOK · BACKTEST</span><span class="okasset"><span class="okdot" style="background:'+col+'"></span>'+c+' · '+nm+'</span></div><div class="oktiles">'+tiles+'</div><div class="btwrap"><div class="bthd"><span class="btlab">IF YOU BOUGHT &amp; HELD</span><span class="btrange">Buy <b>'+MON3[btBuy]+'</b> → Sell <b>'+MON3[sM]+'</b></span></div><div class="btstrip">'+strip+'</div>'+res+'</div>';
- el.querySelectorAll(".btm").forEach(x=>{x.onclick=()=>btPick(+x.getAttribute("data-m"));});
-}
+function redraw(){bkAnchor=null;swatches();toolbarState();browser();subleg();statcards();heatmap();cycles();backtest();lbSeg();render();bindPlot();persist();}
 
 function start(){COINS=M.coins;COINS.forEach((c,i)=>{sel[c]=(i===0);});
  loadFlags();
@@ -1089,7 +1121,7 @@ function start(){COINS=M.coins;COINS.forEach((c,i)=>{sel[c]=(i===0);});
  document.getElementById("labsClose").onclick=closeLabs;
  document.getElementById("labsBack").onclick=closeLabs;
  document.addEventListener("keydown",e=>{if(e.key==="Escape"){closeShare();closeLabs();}});
- document.getElementById("resetAll").onclick=()=>{res="D";lookback="max";logScale=true;showNorm=true;showCur=true;showMatch=false;showMatchMonth=false;bq="";bcat="all";bsort="cap";domF=[0,1];vf=[0,1];hoverIdx=null;COINS.forEach((c,i)=>{sel[c]=(i===0);});redraw();};
+ document.getElementById("resetAll").onclick=()=>{res="D";lookback="max";bkBuy=null;bkSell=null;bkAnchor=null;logScale=true;showNorm=true;showCur=true;showMatch=false;showMatchMonth=false;bq="";bcat="all";bsort="cap";domF=[0,1];vf=[0,1];hoverIdx=null;COINS.forEach((c,i)=>{sel[c]=(i===0);});redraw();};
  window.addEventListener("mousemove",e=>{
    if(panning){if(e.buttons===0){panning=false;const p=document.getElementById("plot");if(p)p.style.cursor="";render();persist();return;}const c=svgCoords(e);if(!c)return;const hs=panBaseDom[1]-panBaseDom[0];let d0=panBaseDom[0]-((c.x-panStartX)/plotW)*hs,d1=d0+hs;if(d0<0){d1-=d0;d0=0;}if(d1>1){d0-=(d1-1);d1=1;}domF=[Math.max(0,d0),Math.min(1,d1)];const vs=panBaseVf[1]-panBaseVf[0];let v0=panBaseVf[0]+((c.y-panStartY)/plotH)*vs,v1=v0+vs;if(vs<=1){if(v0<0){v1-=v0;v0=0;}if(v1>1){v0-=(v1-1);v1=1;}}else{if(v0>0){v1-=v0;v0=0;}if(v1<1){v0+=(1-v1);v1=1;}}vf=[v0,v1];render();return;}
    if(vdragging){if(e.buttons===0){vdragging=false;const p=document.getElementById("plot");if(p)p.style.cursor="";render();persist();return;}const c=svgCoords(e);if(!c)return;const factor=Math.exp(((c.y-vdragStartY)/plotH)*2.5);const mid=(vdragBase[0]+vdragBase[1])/2;const ns=Math.max(0.02,Math.min(60,(vdragBase[1]-vdragBase[0])*factor));vf=[mid-ns/2,mid+ns/2];render();return;}
@@ -1338,11 +1370,12 @@ function copyText(t,btn,label){const done=()=>{btn.textContent="Copied ✓";setT
 function openShare(){persist();document.getElementById("shareUrl").value=location.href;document.getElementById("shareModal").hidden=false;lockBg();const u=document.getElementById("shareUrl");u.focus();u.select();}
 function closeShare(){document.getElementById("shareModal").hidden=true;unlockBg();}
 const FLAGS=[{key:"heatmap",label:"Monthly return heatmap",desc:"A year × month grid of returns for the selected asset — spot which months are usually strong or weak at a glance."},
- {key:"halving",label:"Halving-cycle overlay (BTC)",desc:"Compare BTC's return by days-since-halving across every cycle since 2012 — see where the current cycle sits versus past ones. Log scale."}];
+ {key:"halving",label:"Halving-cycle overlay (BTC)",desc:"Compare BTC's return by days-since-halving across every cycle since 2012 — see where the current cycle sits versus past ones. Log scale."},
+ {key:"backtest",label:"Seasonal outlook & backtest",desc:"Forward 30/90-day and rest-of-year odds from past years, plus a buy-month → sell-month holding backtest with per-year results."}];
 let flags={};
 function loadFlags(){try{flags=JSON.parse(localStorage.getItem("si_flags_m"))||{};}catch(e){flags={};}FLAGS.forEach(f=>{if(typeof flags[f.key]!=="boolean")flags[f.key]=false;});}
 function saveFlags(){try{localStorage.setItem("si_flags_m",JSON.stringify(flags));}catch(e){}}
-function renderLabs(){const el=document.getElementById("labsList");const IC={heatmap:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none"><rect x="3" y="3" width="7" height="7" rx="1.6" fill="#34D399" opacity=".92"></rect><rect x="14" y="3" width="7" height="7" rx="1.6" fill="#2DD4BF" opacity=".5"></rect><rect x="3" y="14" width="7" height="7" rx="1.6" fill="#FB7185" opacity=".7"></rect><rect x="14" y="14" width="7" height="7" rx="1.6" fill="#34D399" opacity=".38"></rect></svg>',halving:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M3 16c3 0 3-9 6-9s3 6 6 6 3-6 6-6" stroke="#FB7E14" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"></path><circle cx="21" cy="7" r="1.9" fill="#FB7E14"></circle></svg>'};
+function renderLabs(){const el=document.getElementById("labsList");const IC={heatmap:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none"><rect x="3" y="3" width="7" height="7" rx="1.6" fill="#34D399" opacity=".92"></rect><rect x="14" y="3" width="7" height="7" rx="1.6" fill="#2DD4BF" opacity=".5"></rect><rect x="3" y="14" width="7" height="7" rx="1.6" fill="#FB7185" opacity=".7"></rect><rect x="14" y="14" width="7" height="7" rx="1.6" fill="#34D399" opacity=".38"></rect></svg>',halving:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M3 16c3 0 3-9 6-9s3 6 6 6 3-6 6-6" stroke="#FB7E14" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"></path><circle cx="21" cy="7" r="1.9" fill="#FB7E14"></circle></svg>',backtest:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none"><rect x="3" y="10" width="4" height="9" rx="1.3" fill="#34D399"></rect><rect x="10" y="5" width="4" height="14" rx="1.3" fill="#2DD4BF"></rect><rect x="17" y="13" width="4" height="6" rx="1.3" fill="#FB7185"></rect></svg>'};
  el.innerHTML=FLAGS.map(f=>'<div class="labrow'+(flags[f.key]?" on":"")+'" data-flag="'+f.key+'"><div class="ic">'+(IC[f.key]||"")+'</div><div class="txt"><div class="lt">'+f.label+'</div><div class="ld">'+f.desc+'</div></div><div class="switch'+(flags[f.key]?" on":"")+'"><div class="knob"></div></div></div>').join("");
  el.querySelectorAll(".labrow").forEach(r=>r.onclick=()=>{const k=r.getAttribute("data-flag");flags[k]=!flags[k];saveFlags();renderLabs();redraw();});}
 function openLabs(){renderLabs();document.getElementById("labsModal").hidden=false;lockBg();}
@@ -1428,6 +1461,43 @@ function cyBind(){const host=document.getElementById("cyhost");
    cyHover=null;cyRender();},{passive:false});
 }
 function cyReset(){cyDom=[0,1];cyVf=[0,1];cyHover=null;cycles();}
+let bkBuy=null,bkSell=null,bkAnchor=null;
+function btYears(c){var ys=(D[c]&&D[c].yrs)||[];var N=lookback==="max"?ys.length:Math.min(ys.length,+lookback);return ys.slice(-N);}
+function btRet(p,a,b){if(!p||p[a]==null||p[b]==null)return null;return (Math.exp((p[b]-p[a])/100)-1)*100;}
+function btWin(c,a,b){var ys=btYears(c);var arr=[];ys.forEach(function(y){var r=btRet(D[c].years[String(y)],a,b);if(r!=null)arr.push({year:y,ret:r});});
+ if(!arr.length)return null;var rs=arr.map(function(x){return x.ret;}).slice().sort(function(p,q){return p-q;});
+ var avg=rs.reduce(function(s,v){return s+v;},0)/rs.length;
+ var med=rs.length%2?rs[(rs.length-1)/2]:(rs[rs.length/2-1]+rs[rs.length/2])/2;
+ var up=arr.filter(function(x){return x.ret>0;}).length;var best=arr[0],worst=arr[0];arr.forEach(function(x){if(x.ret>best.ret)best=x;if(x.ret<worst.ret)worst=x;});
+ return {avg:avg,med:med,up:up,n:arr.length,best:best,worst:worst,list:arr};}
+function btFmt(v,d){return (v>=0?"+":"")+v.toFixed(d==null?1:d)+"%";}
+function btGrad(pos){return pos?"linear-gradient(90deg,#34D399,#2DD4BF)":"linear-gradient(90deg,#FB7185,#F43F5E)";}
+function btCard(lbl,o){if(!o)return '<div class="bt-card"><div class="l">'+lbl+'</div><div class="v" style="color:var(--muted)">–</div><div class="bt-bar"><i style="width:0"></i></div><div class="s">no data</div></div>';
+ var v=o.avg,pos=v>=0,pct=Math.round(o.up/o.n*100);
+ return '<div class="bt-card"><div class="l">'+lbl+'</div><div class="v" style="color:'+(pos?"#34D399":"#FB7185")+'">'+btFmt(v)+'</div><div class="bt-bar"><i style="width:'+pct+'%;background:'+btGrad(pos)+'"></i></div><div class="s">'+pct+'% up · '+o.up+'/'+o.n+' yrs</div></div>';}
+function backtest(){var el=document.getElementById("backtest");if(!el)return;if(!flags.backtest){el.hidden=true;el.innerHTML="";return;}el.hidden=false;
+ var c=primary();var ys=btYears(c);
+ if(ys.length<1){el.innerHTML='<div class="hmnote">No yearly history for '+c+'.</div>';return;}
+ if(bkBuy==null){bkBuy=curMonth()-1;bkSell=11;}
+ var t=M.today_d;var o30=btWin(c,t,Math.min(M.Dn-1,t+30)),o90=btWin(c,t,Math.min(M.Dn-1,t+90)),oRoY=btWin(c,t,M.Dn-1);
+ var a=MSTART[bkBuy],b=bkSell<11?MSTART[bkSell+1]-1:M.Dn-1;var w=btWin(c,a,b);var col=color(c);
+ var h="";
+ h+='<div class="bt-hd"><span class="bt-t">SEASONAL OUTLOOK · BACKTEST</span><span class="bt-asset"><span class="d" style="background:'+col+';box-shadow:0 0 8px '+col+'"></span><b>'+c+'</b> · '+(NAMES[c]||c)+'</span></div>';
+ h+='<div class="bt-cards">'+btCard("NEXT 30D",o30)+btCard("NEXT 90D",o90)+btCard("REST OF YEAR",oRoY)+'</div>';
+ h+='<div class="bt-div"></div>';
+ h+='<div class="bt-hold"><span class="lb">IF YOU BOUGHT &amp; HELD</span><span class="rt">Buy <b>'+MON3[bkBuy]+'</b> → Sell <b>'+MON3[bkSell]+'</b></span></div>';
+ var mh='<div class="bt-months">';for(var m=0;m<12;m++){var cls="bt-m";if(m>bkBuy&&m<bkSell)cls+=" inrange";if(m===bkBuy)cls+=" buy";if(m===bkSell)cls+=" sell";if(bkBuy===bkSell&&m===bkBuy)cls="bt-m buy";mh+='<button class="'+cls+'" data-m="'+m+'">'+MON3[m]+'</button>';}mh+='</div>';h+=mh;
+ if(w){var pos=w.avg>=0;
+  h+='<div class="bt-res"><div class="bt-big" style="color:'+(pos?"#34D399":"#FB7185")+'">'+btFmt(w.avg)+'</div>';
+  h+='<div class="bt-sub">avg return · '+Math.round(w.up/w.n*100)+'% positive ('+w.n+' yr'+(w.n>1?"s":"")+') · median '+btFmt(w.med)+'</div>';
+  h+='<div class="bt-bw"><span class="bst">best ’'+String(w.best.year).slice(2)+' '+btFmt(w.best.ret,0)+'</span><span class="wst">worst ’'+String(w.worst.year).slice(2)+' '+btFmt(w.worst.ret,0)+'</span></div>';
+  var mx=0;w.list.forEach(function(x){mx=Math.max(mx,Math.abs(x.ret));});mx=mx||1;
+  var rows="";w.list.forEach(function(x){var p=x.ret>=0;var wd=(Math.abs(x.ret)/mx*50).toFixed(1);
+    rows+='<div class="bt-row"><span class="yr">’'+String(x.year).slice(2)+'</span><div class="bt-tk"><span class="ax"></span><span class="fl '+(p?"pos":"neg")+'" style="'+(p?"left:50%":"right:50%")+';width:'+wd+'%"></span></div><span class="rv" style="color:'+(p?"#34D399":"#FB7185")+'">'+btFmt(x.ret,0)+'</span></div>';});
+  h+='<div class="bt-chart">'+rows+'</div></div>';}
+ el.innerHTML=h;
+ el.querySelectorAll(".bt-m").forEach(function(btn){btn.onclick=function(){var m=+btn.getAttribute("data-m");if(bkAnchor==null){bkAnchor=m;bkBuy=m;bkSell=m;}else{bkBuy=Math.min(bkAnchor,m);bkSell=Math.max(bkAnchor,m);bkAnchor=null;}backtest();};});
+}
 function lbSeg(){const el=document.getElementById("lbSeg");const opts=[["3","3"],["5","5"],["10","10"],["max","Max"]];el.innerHTML="";opts.forEach(([v,lab])=>{const b=document.createElement("button");b.textContent=lab;if(lookback===v)b.className="on";b.onclick=()=>{lookback=v;for(const k in seaCache)delete seaCache[k];for(const k in metCache)delete metCache[k];redraw();};el.appendChild(b);});}
 function swatches(){const col=color(primary());document.getElementById("avgSw").style.borderBottom="2.5px solid "+col;document.getElementById("curSw").style.borderBottom="2.5px dotted "+lighten(col);}
 function togStyle(btn,on,col){if(on){btn.classList.add("on");btn.style.background=alpha(col,.14);btn.style.borderColor=alpha(col,.5);btn.style.color="#F4F7FB";}else{btn.classList.remove("on");btn.style.background="";btn.style.borderColor="";btn.style.color="";}}
@@ -1438,44 +1508,10 @@ function toolbarState(){const col=color(primary());
  togStyle(document.getElementById("smBtn"),showMatchMonth,"#A5B4FC");
 }
 
-function redraw(){mpill();swatches();toolbarState();browser();subleg();statcards();outlook();heatmap();cycles();lbSeg();render();bindPlot();persist();}
-
-/* ===== Seasonal outlook + backtester ===== */
-let btBuy=null, btSell=11;
-function lbYears(c){const ys=(D[c]&&D[c].yrs)||[];const N=lookback==="max"?ys.length:Math.min(+lookback,ys.length);return ys.slice(-N);}
-function winRet(c,y,a,b){const yr=D[c]&&D[c].years;const arr=yr&&yr[String(y)];if(!arr)return null;const va=arr[a],vb=arr[b];if(va==null||vb==null)return null;return (Math.exp((vb-va)/100)-1)*100;}
-function fwd(c,days){const use=lbYears(c);const dS=M.today_d;const dE=days==null?(M.Dn-1):Math.min(dS+days,M.Dn-1);if(dE<=dS)return null;const rs=[];use.forEach(y=>{const r=winRet(c,y,dS,dE);if(r!=null)rs.push(r);});if(!rs.length)return null;const mean=rs.reduce((s,x)=>s+x,0)/rs.length;const pos=rs.filter(x=>x>0).length;return{mean:mean,pos:pos,n:rs.length,hit:pos/rs.length};}
-function seasonWindow(c,mB,mS){const use=lbYears(c);const dB=MSTART[mB];const dE=Math.min(MSTART[mS]+ML[mS]-1,M.Dn-1);if(dE<dB)return null;const rows=[];use.forEach(y=>{const r=winRet(c,y,dB,dE);if(r!=null)rows.push({y:y,r:r});});if(!rows.length)return null;const rs=rows.map(x=>x.r).slice().sort((a,b)=>a-b);const mean=rs.reduce((s,x)=>s+x,0)/rs.length;const med=rs.length%2?rs[(rs.length-1)/2]:(rs[rs.length/2-1]+rs[rs.length/2])/2;const pos=rows.filter(x=>x.r>0).length;let best=rows[0],worst=rows[0];rows.forEach(x=>{if(x.r>best.r)best=x;if(x.r<worst.r)worst=x;});return{mean:mean,med:med,pos:pos,n:rows.length,hit:pos/rows.length,best:best,worst:worst,rows:rows};}
-function btPick(m){if(btSell==null){if(m>=btBuy)btSell=m;else btBuy=m;}else{btBuy=m;btSell=null;}outlook();}
-function outlook(){
- const el=document.getElementById("outlook");if(!el)return;
- const c=primary();if(!c||!D[c]){el.innerHTML="";return;}
- if(btBuy==null){btBuy=Math.max(0,curMonth()-1);btSell=11;}
- const col=color(c),nm=NAMES[c]||c;
- const hz=[["Next 30d",fwd(c,30)],["Next 90d",fwd(c,90)],["Rest of year",fwd(c,null)]];
- let tiles="";
- hz.forEach(h=>{const lab=h[0],f=h[1];
-  if(!f){tiles+='<div class="oktile"><div class="okl">'+lab+'</div><div class="okbig">—</div></div>';return;}
-  const cl=f.mean>=0?"pos":"neg";
-  tiles+='<div class="oktile"><div class="okl">'+lab+'</div><div class="okbig '+cl+'">'+(f.mean>=0?"+":"")+f.mean.toFixed(1)+'%</div><div class="okhit"><div class="okbar"><i style="width:'+Math.round(f.hit*100)+'%"></i></div><span>'+Math.round(f.hit*100)+'% up · '+f.pos+'/'+f.n+' yrs</span></div></div>';});
- const sM=btSell!=null?btSell:btBuy;
- const bt=seasonWindow(c,btBuy,sM);
- let strip="";
- for(let m=0;m<12;m++){const inR=m>=btBuy&&m<=sM;const cl="btm"+(inR?" in":"")+(m===btBuy?" buy":"")+(m===sM&&sM!==btBuy?" sell":"");strip+='<div class="'+cl+'" data-m="'+m+'">'+MON3[m]+'</div>';}
- let res="";
- if(bt){
-  const cl=bt.mean>=0?"pos":"neg";
-  const mx=Math.max.apply(null,bt.rows.map(x=>Math.abs(x.r)).concat([1]));
-  let bars="";
-  bt.rows.forEach(x=>{const h=Math.max(2,Math.round(Math.abs(x.r)/mx*30));const pn=x.r>=0?"pos":"neg";bars+='<div class="ybwrap"><div class="ybar" title="'+x.y+': '+(x.r>=0?"+":"")+x.r.toFixed(1)+'%"><div class="yb '+pn+'" style="height:'+h+'px"></div></div><span>’'+String(x.y).slice(2)+'</span></div>';});
-  res='<div class="btbig '+cl+'">'+(bt.mean>=0?"+":"")+bt.mean.toFixed(1)+'%</div><div class="btsub">avg return · '+Math.round(bt.hit*100)+'% positive ('+bt.pos+'/'+bt.n+' yrs) · median '+(bt.med>=0?"+":"")+bt.med.toFixed(1)+'%</div><div class="btex"><span class="pos">best ’'+String(bt.best.y).slice(2)+' '+(bt.best.r>=0?"+":"")+bt.best.r.toFixed(0)+'%</span><span class="neg">worst ’'+String(bt.worst.y).slice(2)+' '+(bt.worst.r>=0?"+":"")+bt.worst.r.toFixed(0)+'%</span></div><div class="ybars">'+bars+'</div>';
- } else res='<div class="hmnote">Not enough history for this window.</div>';
- el.innerHTML='<div class="okhd"><span class="oktt">SEASONAL OUTLOOK · BACKTEST</span><span class="okasset"><span class="okdot" style="background:'+col+'"></span>'+c+' · '+nm+'</span></div><div class="oktiles">'+tiles+'</div><div class="btwrap"><div class="bthd"><span class="btlab">IF YOU BOUGHT &amp; HELD</span><span class="btrange">Buy <b>'+MON3[btBuy]+'</b> → Sell <b>'+MON3[sM]+'</b></span></div><div class="btstrip">'+strip+'</div>'+res+'</div>';
- el.querySelectorAll(".btm").forEach(x=>{x.onclick=()=>btPick(+x.getAttribute("data-m"));});
-}
+function redraw(){bkAnchor=null;mpill();swatches();toolbarState();browser();subleg();statcards();heatmap();cycles();backtest();lbSeg();render();bindPlot();persist();}
 
 function start(){COINS=M.coins;COINS.forEach((c,i)=>{sel[c]=(i===0);});
- loadFlags();flags.heatmap=true;flags.halving=true;
+ loadFlags();flags.heatmap=true;flags.halving=true;flags.backtest=true;
  try{const h=decodeURIComponent(location.hash.slice(1));const saved=localStorage.getItem("si_state_m")||"";if(h)applyState(h);else if(saved)applyState(saved);}catch(e){}domF=[0,1];vf=[0,1];
  if(embedMode){document.body.classList.add("embed");browserOpen=false;}
  document.getElementById("updated").textContent="Updated · "+enUpdated(M.asof);
@@ -1493,7 +1529,7 @@ function start(){COINS=M.coins;COINS.forEach((c,i)=>{sel[c]=(i===0);});
  document.getElementById("labsClose").onclick=closeLabs;
  document.getElementById("labsBack").onclick=closeLabs;
  document.addEventListener("keydown",e=>{if(e.key==="Escape"){closeShare();closeLabs();}});
- document.getElementById("resetAll").onclick=()=>{res="D";lookback="max";logScale=true;showNorm=true;showCur=true;showMatch=false;showMatchMonth=false;bq="";bcat="all";bsort="cap";domF=[0,1];vf=[0,1];hoverIdx=null;COINS.forEach((c,i)=>{sel[c]=(i===0);});redraw();};
+ document.getElementById("resetAll").onclick=()=>{res="D";lookback="max";bkBuy=null;bkSell=null;bkAnchor=null;logScale=true;showNorm=true;showCur=true;showMatch=false;showMatchMonth=false;bq="";bcat="all";bsort="cap";domF=[0,1];vf=[0,1];hoverIdx=null;COINS.forEach((c,i)=>{sel[c]=(i===0);});redraw();};
  window.addEventListener("mousemove",e=>{
    if(panning){if(e.buttons===0){panning=false;const p=document.getElementById("plot");if(p)p.style.cursor="";render();persist();return;}const c=svgCoords(e);if(!c)return;const hs=panBaseDom[1]-panBaseDom[0];let d0=panBaseDom[0]-((c.x-panStartX)/plotW)*hs,d1=d0+hs;if(d0<0){d1-=d0;d0=0;}if(d1>1){d0-=(d1-1);d1=1;}domF=[Math.max(0,d0),Math.min(1,d1)];const vs=panBaseVf[1]-panBaseVf[0];let v0=panBaseVf[0]+((c.y-panStartY)/plotH)*vs,v1=v0+vs;if(vs<=1){if(v0<0){v1-=v0;v0=0;}if(v1>1){v0-=(v1-1);v1=1;}}else{if(v0>0){v1-=v0;v0=0;}if(v1<1){v0+=(1-v1);v1=1;}}vf=[v0,v1];render();return;}
    if(vdragging){if(e.buttons===0){vdragging=false;const p=document.getElementById("plot");if(p)p.style.cursor="";render();persist();return;}const c=svgCoords(e);if(!c)return;const factor=Math.exp(((c.y-vdragStartY)/plotH)*2.5);const mid=(vdragBase[0]+vdragBase[1])/2;const ns=Math.max(0.02,Math.min(60,(vdragBase[1]-vdragBase[0])*factor));vf=[mid-ns/2,mid+ns/2];render();return;}
