@@ -221,6 +221,46 @@
  .scnote{grid-column:1/-1;padding:16px;border-radius:16px;background:rgba(148,163,184,.05);border:1px solid rgba(148,163,184,.12);font:600 12px var(--sans);color:var(--muted)}
  .foot{margin-top:16px;text-align:center;font:600 10.5px var(--mono);letter-spacing:.08em;color:rgba(148,163,184,.4)}
  .status{font:600 13px var(--mono);color:var(--muted);padding:60px 4px;text-align:center}
+ .outlook{margin-top:14px;padding:18px 18px 16px;border-radius:20px;background:rgba(148,163,184,.05);border:1px solid rgba(148,163,184,.12);backdrop-filter:blur(14px)}
+ .okhd{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:14px}
+ .oktt{font:800 10px var(--mono);letter-spacing:.16em;color:var(--muted)}
+ .okasset{display:flex;align-items:center;gap:7px;font:700 11.5px var(--mono);color:var(--text)}
+ .okdot{width:8px;height:8px;border-radius:50%;flex:none}
+ .oktiles{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px}
+ .oktile{padding:13px 14px;border-radius:14px;background:rgba(148,163,184,.05);border:1px solid rgba(148,163,184,.1)}
+ .okl{font:700 9px var(--mono);letter-spacing:.1em;color:var(--muted);text-transform:uppercase}
+ .okbig{margin-top:7px;font:800 21px var(--mono);letter-spacing:-.5px;color:var(--text)}
+ .okbig.pos,.btbig.pos{color:var(--pos)}
+ .okbig.neg,.btbig.neg{color:var(--neg)}
+ .okhit{margin-top:9px}
+ .okbar{height:5px;border-radius:999px;background:rgba(148,163,184,.14);overflow:hidden}
+ .okbar i{display:block;height:100%;border-radius:999px;background:linear-gradient(90deg,var(--teal),var(--accent))}
+ .okhit span{display:block;margin-top:6px;font:600 9.5px var(--mono);color:var(--text2)}
+ .btwrap{border-top:1px solid rgba(148,163,184,.1);padding-top:15px}
+ .bthd{display:flex;align-items:center;justify-content:space-between;margin-bottom:11px;flex-wrap:wrap;gap:6px}
+ .btlab{font:800 9px var(--mono);letter-spacing:.14em;color:var(--muted)}
+ .btrange{font:600 11px var(--sans);color:var(--text2)}
+ .btrange b{color:var(--accent-bright);font-family:var(--mono);font-weight:700}
+ .btstrip{display:grid;grid-template-columns:repeat(12,1fr);gap:4px;margin-bottom:15px}
+ .btm{padding:7px 2px;text-align:center;border-radius:8px;cursor:pointer;font:700 9.5px var(--mono);color:var(--text2);background:rgba(148,163,184,.05);border:1px solid transparent;transition:.12s;user-select:none}
+ .btm:hover{color:var(--text);background:rgba(148,163,184,.1)}
+ .btm.in{background:rgba(52,211,153,.13);color:var(--accent-bright)}
+ .btm.buy{background:rgba(52,211,153,.26);border-color:var(--accent);color:#EAFBF4}
+ .btm.sell{background:rgba(45,212,191,.26);border-color:var(--teal);color:#EAFBF4}
+ .btbig{font:800 30px var(--mono);letter-spacing:-.5px;color:var(--text)}
+ .btsub{margin-top:3px;font:600 11px var(--sans);color:var(--text2)}
+ .btex{margin-top:9px;display:flex;gap:16px;font:700 10.5px var(--mono)}
+ .btex .pos{color:var(--pos)}
+ .btex .neg{color:var(--neg)}
+ .ybars{margin-top:14px;display:flex;align-items:stretch;gap:5px;overflow-x:auto;padding-bottom:2px}
+ .ybwrap{display:flex;flex-direction:column;align-items:center;gap:5px;flex:1;min-width:26px}
+ .ybar{position:relative;width:100%;height:66px}
+ .ybar::before{content:"";position:absolute;left:8%;right:8%;top:50%;height:1px;background:rgba(148,163,184,.16)}
+ .yb{position:absolute;left:22%;right:22%;border-radius:2px}
+ .yb.pos{bottom:50%;background:linear-gradient(180deg,var(--accent),var(--teal-deep))}
+ .yb.neg{top:50%;background:linear-gradient(180deg,#FB7185,#9F1239)}
+ .ybwrap span{font:600 8.5px var(--mono);color:var(--muted)}
+
 </style>
 <div class="aurora">
  <div class="glow g1"></div><div class="glow g2"></div><div class="glow g3"></div>
@@ -260,6 +300,7 @@
   </div>
 
   <div class="statcards" id="statcards"></div>
+  <div class="outlook" id="outlook"></div>
   <div class="heatmap" id="heatmap" hidden="hidden"></div>
   <div class="cycles" id="cycles" hidden="hidden"></div>
 
@@ -580,6 +621,46 @@
  .screen .slrow .vsep{display:inline-block}
  .screen .slrow .nm{font-size:11.5px}
  .screen .slrow>span:not(.nm){padding:0;background:none;border:none}
+ .outlook{margin-top:14px;padding:18px 18px 16px;border-radius:20px;background:rgba(148,163,184,.05);border:1px solid rgba(148,163,184,.12);backdrop-filter:blur(14px)}
+ .okhd{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:14px}
+ .oktt{font:800 10px var(--mono);letter-spacing:.16em;color:var(--muted)}
+ .okasset{display:flex;align-items:center;gap:7px;font:700 11.5px var(--mono);color:var(--text)}
+ .okdot{width:8px;height:8px;border-radius:50%;flex:none}
+ .oktiles{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px}
+ .oktile{padding:13px 14px;border-radius:14px;background:rgba(148,163,184,.05);border:1px solid rgba(148,163,184,.1)}
+ .okl{font:700 9px var(--mono);letter-spacing:.1em;color:var(--muted);text-transform:uppercase}
+ .okbig{margin-top:7px;font:800 21px var(--mono);letter-spacing:-.5px;color:var(--text)}
+ .okbig.pos,.btbig.pos{color:var(--pos)}
+ .okbig.neg,.btbig.neg{color:var(--neg)}
+ .okhit{margin-top:9px}
+ .okbar{height:5px;border-radius:999px;background:rgba(148,163,184,.14);overflow:hidden}
+ .okbar i{display:block;height:100%;border-radius:999px;background:linear-gradient(90deg,var(--teal),var(--accent))}
+ .okhit span{display:block;margin-top:6px;font:600 9.5px var(--mono);color:var(--text2)}
+ .btwrap{border-top:1px solid rgba(148,163,184,.1);padding-top:15px}
+ .bthd{display:flex;align-items:center;justify-content:space-between;margin-bottom:11px;flex-wrap:wrap;gap:6px}
+ .btlab{font:800 9px var(--mono);letter-spacing:.14em;color:var(--muted)}
+ .btrange{font:600 11px var(--sans);color:var(--text2)}
+ .btrange b{color:var(--accent-bright);font-family:var(--mono);font-weight:700}
+ .btstrip{display:grid;grid-template-columns:repeat(12,1fr);gap:4px;margin-bottom:15px}
+ .btm{padding:7px 2px;text-align:center;border-radius:8px;cursor:pointer;font:700 9.5px var(--mono);color:var(--text2);background:rgba(148,163,184,.05);border:1px solid transparent;transition:.12s;user-select:none}
+ .btm:hover{color:var(--text);background:rgba(148,163,184,.1)}
+ .btm.in{background:rgba(52,211,153,.13);color:var(--accent-bright)}
+ .btm.buy{background:rgba(52,211,153,.26);border-color:var(--accent);color:#EAFBF4}
+ .btm.sell{background:rgba(45,212,191,.26);border-color:var(--teal);color:#EAFBF4}
+ .btbig{font:800 30px var(--mono);letter-spacing:-.5px;color:var(--text)}
+ .btsub{margin-top:3px;font:600 11px var(--sans);color:var(--text2)}
+ .btex{margin-top:9px;display:flex;gap:16px;font:700 10.5px var(--mono)}
+ .btex .pos{color:var(--pos)}
+ .btex .neg{color:var(--neg)}
+ .ybars{margin-top:14px;display:flex;align-items:stretch;gap:5px;overflow-x:auto;padding-bottom:2px}
+ .ybwrap{display:flex;flex-direction:column;align-items:center;gap:5px;flex:1;min-width:26px}
+ .ybar{position:relative;width:100%;height:66px}
+ .ybar::before{content:"";position:absolute;left:8%;right:8%;top:50%;height:1px;background:rgba(148,163,184,.16)}
+ .yb{position:absolute;left:22%;right:22%;border-radius:2px}
+ .yb.pos{bottom:50%;background:linear-gradient(180deg,var(--accent),var(--teal-deep))}
+ .yb.neg{top:50%;background:linear-gradient(180deg,#FB7185,#9F1239)}
+ .ybwrap span{font:600 8.5px var(--mono);color:var(--muted)}
+
 
  /* --- deploy overrides: un-mockup the iOS frame, fill the real viewport --- */
  .screen{position:relative;width:100%;min-height:100vh;height:auto;border-radius:0;overflow:visible;overflow-x:clip;background:var(--bg)}
@@ -611,6 +692,7 @@
      </div>
      <div class="subleg" id="subleg"></div>
      <div class="statcards" id="statcards"></div>
+     <div class="outlook" id="outlook"></div>
      <div class="mrowlab">MONTHLY RETURN HEATMAP</div>
      <div class="heatmap" id="heatmap" hidden="hidden"></div>
      <div class="mrowlab">BTC HALVING CYCLES</div>
@@ -952,7 +1034,41 @@ function toolbarState(){const col=color(primary());
  togStyle(document.getElementById("smBtn"),showMatchMonth,"#A5B4FC");
 }
 
-function redraw(){swatches();toolbarState();browser();subleg();statcards();heatmap();cycles();lbSeg();render();bindPlot();persist();}
+function redraw(){swatches();toolbarState();browser();subleg();statcards();outlook();heatmap();cycles();lbSeg();render();bindPlot();persist();}
+
+/* ===== Seasonal outlook + backtester ===== */
+let btBuy=null, btSell=11;
+function lbYears(c){const ys=(D[c]&&D[c].yrs)||[];const N=lookback==="max"?ys.length:Math.min(+lookback,ys.length);return ys.slice(-N);}
+function winRet(c,y,a,b){const yr=D[c]&&D[c].years;const arr=yr&&yr[String(y)];if(!arr)return null;const va=arr[a],vb=arr[b];if(va==null||vb==null)return null;return (Math.exp((vb-va)/100)-1)*100;}
+function fwd(c,days){const use=lbYears(c);const dS=M.today_d;const dE=days==null?(M.Dn-1):Math.min(dS+days,M.Dn-1);if(dE<=dS)return null;const rs=[];use.forEach(y=>{const r=winRet(c,y,dS,dE);if(r!=null)rs.push(r);});if(!rs.length)return null;const mean=rs.reduce((s,x)=>s+x,0)/rs.length;const pos=rs.filter(x=>x>0).length;return{mean:mean,pos:pos,n:rs.length,hit:pos/rs.length};}
+function seasonWindow(c,mB,mS){const use=lbYears(c);const dB=MSTART[mB];const dE=Math.min(MSTART[mS]+ML[mS]-1,M.Dn-1);if(dE<dB)return null;const rows=[];use.forEach(y=>{const r=winRet(c,y,dB,dE);if(r!=null)rows.push({y:y,r:r});});if(!rows.length)return null;const rs=rows.map(x=>x.r).slice().sort((a,b)=>a-b);const mean=rs.reduce((s,x)=>s+x,0)/rs.length;const med=rs.length%2?rs[(rs.length-1)/2]:(rs[rs.length/2-1]+rs[rs.length/2])/2;const pos=rows.filter(x=>x.r>0).length;let best=rows[0],worst=rows[0];rows.forEach(x=>{if(x.r>best.r)best=x;if(x.r<worst.r)worst=x;});return{mean:mean,med:med,pos:pos,n:rows.length,hit:pos/rows.length,best:best,worst:worst,rows:rows};}
+function btPick(m){if(btSell==null){if(m>=btBuy)btSell=m;else btBuy=m;}else{btBuy=m;btSell=null;}outlook();}
+function outlook(){
+ const el=document.getElementById("outlook");if(!el)return;
+ const c=primary();if(!c||!D[c]){el.innerHTML="";return;}
+ if(btBuy==null){btBuy=Math.max(0,curMonth()-1);btSell=11;}
+ const col=color(c),nm=NAMES[c]||c;
+ const hz=[["Next 30d",fwd(c,30)],["Next 90d",fwd(c,90)],["Rest of year",fwd(c,null)]];
+ let tiles="";
+ hz.forEach(h=>{const lab=h[0],f=h[1];
+  if(!f){tiles+='<div class="oktile"><div class="okl">'+lab+'</div><div class="okbig">—</div></div>';return;}
+  const cl=f.mean>=0?"pos":"neg";
+  tiles+='<div class="oktile"><div class="okl">'+lab+'</div><div class="okbig '+cl+'">'+(f.mean>=0?"+":"")+f.mean.toFixed(1)+'%</div><div class="okhit"><div class="okbar"><i style="width:'+Math.round(f.hit*100)+'%"></i></div><span>'+Math.round(f.hit*100)+'% up · '+f.pos+'/'+f.n+' yrs</span></div></div>';});
+ const sM=btSell!=null?btSell:btBuy;
+ const bt=seasonWindow(c,btBuy,sM);
+ let strip="";
+ for(let m=0;m<12;m++){const inR=m>=btBuy&&m<=sM;const cl="btm"+(inR?" in":"")+(m===btBuy?" buy":"")+(m===sM&&sM!==btBuy?" sell":"");strip+='<div class="'+cl+'" data-m="'+m+'">'+MON3[m]+'</div>';}
+ let res="";
+ if(bt){
+  const cl=bt.mean>=0?"pos":"neg";
+  const mx=Math.max.apply(null,bt.rows.map(x=>Math.abs(x.r)).concat([1]));
+  let bars="";
+  bt.rows.forEach(x=>{const h=Math.max(2,Math.round(Math.abs(x.r)/mx*30));const pn=x.r>=0?"pos":"neg";bars+='<div class="ybwrap"><div class="ybar" title="'+x.y+': '+(x.r>=0?"+":"")+x.r.toFixed(1)+'%"><div class="yb '+pn+'" style="height:'+h+'px"></div></div><span>’'+String(x.y).slice(2)+'</span></div>';});
+  res='<div class="btbig '+cl+'">'+(bt.mean>=0?"+":"")+bt.mean.toFixed(1)+'%</div><div class="btsub">avg return · '+Math.round(bt.hit*100)+'% positive ('+bt.pos+'/'+bt.n+' yrs) · median '+(bt.med>=0?"+":"")+bt.med.toFixed(1)+'%</div><div class="btex"><span class="pos">best ’'+String(bt.best.y).slice(2)+' '+(bt.best.r>=0?"+":"")+bt.best.r.toFixed(0)+'%</span><span class="neg">worst ’'+String(bt.worst.y).slice(2)+' '+(bt.worst.r>=0?"+":"")+bt.worst.r.toFixed(0)+'%</span></div><div class="ybars">'+bars+'</div>';
+ } else res='<div class="hmnote">Not enough history for this window.</div>';
+ el.innerHTML='<div class="okhd"><span class="oktt">SEASONAL OUTLOOK · BACKTEST</span><span class="okasset"><span class="okdot" style="background:'+col+'"></span>'+c+' · '+nm+'</span></div><div class="oktiles">'+tiles+'</div><div class="btwrap"><div class="bthd"><span class="btlab">IF YOU BOUGHT &amp; HELD</span><span class="btrange">Buy <b>'+MON3[btBuy]+'</b> → Sell <b>'+MON3[sM]+'</b></span></div><div class="btstrip">'+strip+'</div>'+res+'</div>';
+ el.querySelectorAll(".btm").forEach(x=>{x.onclick=()=>btPick(+x.getAttribute("data-m"));});
+}
 
 function start(){COINS=M.coins;COINS.forEach((c,i)=>{sel[c]=(i===0);});
  loadFlags();
@@ -1322,7 +1438,41 @@ function toolbarState(){const col=color(primary());
  togStyle(document.getElementById("smBtn"),showMatchMonth,"#A5B4FC");
 }
 
-function redraw(){mpill();swatches();toolbarState();browser();subleg();statcards();heatmap();cycles();lbSeg();render();bindPlot();persist();}
+function redraw(){mpill();swatches();toolbarState();browser();subleg();statcards();outlook();heatmap();cycles();lbSeg();render();bindPlot();persist();}
+
+/* ===== Seasonal outlook + backtester ===== */
+let btBuy=null, btSell=11;
+function lbYears(c){const ys=(D[c]&&D[c].yrs)||[];const N=lookback==="max"?ys.length:Math.min(+lookback,ys.length);return ys.slice(-N);}
+function winRet(c,y,a,b){const yr=D[c]&&D[c].years;const arr=yr&&yr[String(y)];if(!arr)return null;const va=arr[a],vb=arr[b];if(va==null||vb==null)return null;return (Math.exp((vb-va)/100)-1)*100;}
+function fwd(c,days){const use=lbYears(c);const dS=M.today_d;const dE=days==null?(M.Dn-1):Math.min(dS+days,M.Dn-1);if(dE<=dS)return null;const rs=[];use.forEach(y=>{const r=winRet(c,y,dS,dE);if(r!=null)rs.push(r);});if(!rs.length)return null;const mean=rs.reduce((s,x)=>s+x,0)/rs.length;const pos=rs.filter(x=>x>0).length;return{mean:mean,pos:pos,n:rs.length,hit:pos/rs.length};}
+function seasonWindow(c,mB,mS){const use=lbYears(c);const dB=MSTART[mB];const dE=Math.min(MSTART[mS]+ML[mS]-1,M.Dn-1);if(dE<dB)return null;const rows=[];use.forEach(y=>{const r=winRet(c,y,dB,dE);if(r!=null)rows.push({y:y,r:r});});if(!rows.length)return null;const rs=rows.map(x=>x.r).slice().sort((a,b)=>a-b);const mean=rs.reduce((s,x)=>s+x,0)/rs.length;const med=rs.length%2?rs[(rs.length-1)/2]:(rs[rs.length/2-1]+rs[rs.length/2])/2;const pos=rows.filter(x=>x.r>0).length;let best=rows[0],worst=rows[0];rows.forEach(x=>{if(x.r>best.r)best=x;if(x.r<worst.r)worst=x;});return{mean:mean,med:med,pos:pos,n:rows.length,hit:pos/rows.length,best:best,worst:worst,rows:rows};}
+function btPick(m){if(btSell==null){if(m>=btBuy)btSell=m;else btBuy=m;}else{btBuy=m;btSell=null;}outlook();}
+function outlook(){
+ const el=document.getElementById("outlook");if(!el)return;
+ const c=primary();if(!c||!D[c]){el.innerHTML="";return;}
+ if(btBuy==null){btBuy=Math.max(0,curMonth()-1);btSell=11;}
+ const col=color(c),nm=NAMES[c]||c;
+ const hz=[["Next 30d",fwd(c,30)],["Next 90d",fwd(c,90)],["Rest of year",fwd(c,null)]];
+ let tiles="";
+ hz.forEach(h=>{const lab=h[0],f=h[1];
+  if(!f){tiles+='<div class="oktile"><div class="okl">'+lab+'</div><div class="okbig">—</div></div>';return;}
+  const cl=f.mean>=0?"pos":"neg";
+  tiles+='<div class="oktile"><div class="okl">'+lab+'</div><div class="okbig '+cl+'">'+(f.mean>=0?"+":"")+f.mean.toFixed(1)+'%</div><div class="okhit"><div class="okbar"><i style="width:'+Math.round(f.hit*100)+'%"></i></div><span>'+Math.round(f.hit*100)+'% up · '+f.pos+'/'+f.n+' yrs</span></div></div>';});
+ const sM=btSell!=null?btSell:btBuy;
+ const bt=seasonWindow(c,btBuy,sM);
+ let strip="";
+ for(let m=0;m<12;m++){const inR=m>=btBuy&&m<=sM;const cl="btm"+(inR?" in":"")+(m===btBuy?" buy":"")+(m===sM&&sM!==btBuy?" sell":"");strip+='<div class="'+cl+'" data-m="'+m+'">'+MON3[m]+'</div>';}
+ let res="";
+ if(bt){
+  const cl=bt.mean>=0?"pos":"neg";
+  const mx=Math.max.apply(null,bt.rows.map(x=>Math.abs(x.r)).concat([1]));
+  let bars="";
+  bt.rows.forEach(x=>{const h=Math.max(2,Math.round(Math.abs(x.r)/mx*30));const pn=x.r>=0?"pos":"neg";bars+='<div class="ybwrap"><div class="ybar" title="'+x.y+': '+(x.r>=0?"+":"")+x.r.toFixed(1)+'%"><div class="yb '+pn+'" style="height:'+h+'px"></div></div><span>’'+String(x.y).slice(2)+'</span></div>';});
+  res='<div class="btbig '+cl+'">'+(bt.mean>=0?"+":"")+bt.mean.toFixed(1)+'%</div><div class="btsub">avg return · '+Math.round(bt.hit*100)+'% positive ('+bt.pos+'/'+bt.n+' yrs) · median '+(bt.med>=0?"+":"")+bt.med.toFixed(1)+'%</div><div class="btex"><span class="pos">best ’'+String(bt.best.y).slice(2)+' '+(bt.best.r>=0?"+":"")+bt.best.r.toFixed(0)+'%</span><span class="neg">worst ’'+String(bt.worst.y).slice(2)+' '+(bt.worst.r>=0?"+":"")+bt.worst.r.toFixed(0)+'%</span></div><div class="ybars">'+bars+'</div>';
+ } else res='<div class="hmnote">Not enough history for this window.</div>';
+ el.innerHTML='<div class="okhd"><span class="oktt">SEASONAL OUTLOOK · BACKTEST</span><span class="okasset"><span class="okdot" style="background:'+col+'"></span>'+c+' · '+nm+'</span></div><div class="oktiles">'+tiles+'</div><div class="btwrap"><div class="bthd"><span class="btlab">IF YOU BOUGHT &amp; HELD</span><span class="btrange">Buy <b>'+MON3[btBuy]+'</b> → Sell <b>'+MON3[sM]+'</b></span></div><div class="btstrip">'+strip+'</div>'+res+'</div>';
+ el.querySelectorAll(".btm").forEach(x=>{x.onclick=()=>btPick(+x.getAttribute("data-m"));});
+}
 
 function start(){COINS=M.coins;COINS.forEach((c,i)=>{sel[c]=(i===0);});
  loadFlags();flags.heatmap=true;flags.halving=true;
